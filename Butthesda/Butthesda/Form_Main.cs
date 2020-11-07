@@ -23,7 +23,7 @@ namespace Butthesda
 
         public Form_Main()
         {
-			startServer();
+			Start_Buttplug_Server();
 			InitializeComponent();
 
             foreach(String game in Games.List())
@@ -45,7 +45,7 @@ namespace Butthesda
                 }
             }
             
-            textField_game_path.Text = Properties.Settings.Default.GamePath;
+            textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
 
         }
 
@@ -54,7 +54,7 @@ namespace Butthesda
 			Console.WriteLine($"Device ${args.Device.Name} connected");
 		}
 
-		private async void startServer()
+		private async void Start_Buttplug_Server()
 		{
 			var connector = new ButtplugEmbeddedConnector("Example Server");
 			//var connector = new ButtplugWebsocketConnector(new Uri("ws://localhost:12345/buttplug"));
@@ -141,12 +141,32 @@ namespace Butthesda
             
         }
 
-        private string default_gamePath = "";
-        private void Button_skyrim_se_CheckedChanged(object sender, EventArgs e)
+
+        private void Button_default_path_Click(object sender, EventArgs e)
         {
-            string keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim Special Edition";
-            string path = (string)Registry.GetValue(keyName, "Installed Path", @"C:\Program Files (x86)\Steam\steamapps\common\Skyrim Special Edition");
-            default_gamePath = path;
+            Set_Default_GamePath();
+        }
+
+        private void Set_Default_GamePath()
+		{
+			string keyName = "";
+
+            if (Game_Name == Games.Skyrim.Executable_Name)
+			{
+                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim Special Edition";
+                
+            }else if (Game_Name == Games.SkyrimSe.Executable_Name)
+			{
+                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim";
+            }
+            else if (Game_Name == Games.Fallout4.Executable_Name)
+            {
+                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Fallout4";
+            }
+			string path = (string)Registry.GetValue(keyName, "Installed Path", "");
+
+
+			textField_game_path.Text = path;
         }
 
         private void Button_start_Click(object sender, EventArgs e)
@@ -163,30 +183,16 @@ namespace Butthesda
                 return;
             }
 
-            var f = new Form_EventFileReader(Game_Name);
+            string Link_File_Path = @"\buttplugio\link.txt";
+
+            var f = new Form_EventFileReader(Game_Name, Link_File_Path);
             f.ShowDialog();
         }
 
         public static string game_path = "";
-        private bool overwriting_textField_game_path = false;
         private void Game_path_TextChanged(object sender, EventArgs e)
         {
-            if (overwriting_textField_game_path) return;
-            overwriting_textField_game_path = true;
 
-            if (!textField_game_path.Text.EndsWith("\\"))
-            {
-                textField_game_path.Text += "\\";
-            }
-            if (!textField_game_path.Text.EndsWith("data\\") && !textField_game_path.Text.EndsWith("overwrite\\") && !textField_game_path.Text.EndsWith("jp_buttplugio\\"))
-            {
-                //textField_game_path.Text += "data\\";
-            }
-            game_path = textField_game_path.Text;
-            overwriting_textField_game_path = false;
-
-            Properties.Settings.Default.GamePath = textField_game_path.Text;
-            Properties.Settings.Default.Save();
         }
 
         private void Browse_game_path_Click(object sender, EventArgs e)
@@ -220,7 +226,24 @@ namespace Butthesda
 
             if (radioButton.Checked)
             {
-                if(button_skyrim == radioButton)
+                //save path
+                if (Game_Name == Games.Skyrim.Executable_Name)
+                {
+                    Properties.Settings.Default.GamePath_Skyrim = textField_game_path.Text;
+                }
+                else if (Game_Name == Games.SkyrimSe.Executable_Name)
+                {
+                    Properties.Settings.Default.GamePath_SkyrimSe = textField_game_path.Text;
+                }
+                else if (Game_Name == Games.Fallout4.Executable_Name)
+                {
+                    Properties.Settings.Default.GamePath_Fallout4 = textField_game_path.Text;
+                }
+                Properties.Settings.Default.Save();
+
+
+                //update game_name
+                if (button_skyrim == radioButton)
                 {
                     Game_Name = Games.Skyrim.Executable_Name;
                 }else if (button_skyrim_se == radioButton)
@@ -231,7 +254,29 @@ namespace Butthesda
                 {
                     Game_Name = Games.Fallout4.Executable_Name;
                 }
+
+
+                //load saved game_path
+                if (Game_Name == Games.Skyrim.Executable_Name)
+                {
+                    textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
+                }
+                else if (Game_Name == Games.SkyrimSe.Executable_Name)
+                {
+                    textField_game_path.Text = Properties.Settings.Default.GamePath_SkyrimSe;
+                }
+                else if (Game_Name == Games.Fallout4.Executable_Name)
+                {
+                    textField_game_path.Text = Properties.Settings.Default.GamePath_Fallout4;
+                }
+                Properties.Settings.Default.Save();
+
+
+
             }
         }
-    }
+
+
+
+	}
 }

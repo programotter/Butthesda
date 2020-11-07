@@ -2,7 +2,13 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Butthesda.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="GamePath" Type="System.String" Scope="User">
+    <Setting Name="GamePath_Skyrim" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="GamePath_SkyrimSe" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="GamePath_Fallout4" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

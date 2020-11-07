@@ -41,8 +41,11 @@ namespace Butthesda
             normal
         }
 
-        public EventFileScanner(Memory_Scanner memory_scanner)
+        private readonly string Link_File_Path;
+
+        public EventFileScanner(string Link_File_Path, Memory_Scanner memory_scanner)
         {
+            this.Link_File_Path = Link_File_Path;
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
 
         }
@@ -77,7 +80,7 @@ namespace Butthesda
         public void Run()
         {
             Thread.Sleep(100);
-            string path = Form_Main.game_path + @"buttplugio\link.txt";
+            string path = Link_File_Path;
             return;
             const Int32 BufferSize = 128;
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))

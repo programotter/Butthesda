@@ -20,8 +20,9 @@ namespace Butthesda
 
         public VibrationEvents()
         {
-            Init_SexLabAnimations();
-            Init_Events();
+            //todo re-enable this!
+            //Init_SexLabAnimations();
+            //Init_Events();
         }
 
 

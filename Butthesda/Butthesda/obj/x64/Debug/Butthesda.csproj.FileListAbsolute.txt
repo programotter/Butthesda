@@ -35,3 +35,7 @@ C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesd
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesda.csproj.CopyComplete
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesda.exe
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesda.pdb
+C:\Users\jpriv\Source\Repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\Butthesda.exe.manifest
+C:\Users\jpriv\Source\Repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\Butthesda.application
+C:\Users\jpriv\Source\Repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesda.exe.manifest
+C:\Users\jpriv\Source\Repos\Butthesda\Butthesda\Butthesda\obj\x64\Debug\Butthesda.application

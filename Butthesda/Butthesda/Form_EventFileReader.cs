@@ -13,12 +13,12 @@ namespace Butthesda
 
         private Memory_Scanner memory_scanner;
         private VibrationEvents vibrationEvents;
-        public Form_EventFileReader(String GameName)
+        public Form_EventFileReader(string Game_Name, string Link_File_Path)
         {
             InitializeComponent();
             vibrationEvents = new VibrationEvents();
 
-            memory_scanner = new Memory_Scanner(GameName);
+            memory_scanner = new Memory_Scanner(Game_Name);
             memory_scanner.AnimationEvent += Memory_Scanner_AnimationEvent;
             memory_scanner.AnimationTimeResetted += Memory_Scanner_AnimationTimeResetted;
             memory_scanner.AnimationTimeUpdated += Memory_Scanner_AnimationTimeUpdated;
@@ -26,7 +26,7 @@ namespace Butthesda
             memory_scanner.GameResumed += Memory_Scanner_GameResumed;
 
 
-            EventFileScanner eventFileScanner = new EventFileScanner(memory_scanner);
+            EventFileScanner eventFileScanner = new EventFileScanner(Link_File_Path, memory_scanner);
             eventFileScanner.Save_Loaded += EventFileScanner_SaveLoaded;
             eventFileScanner.Arousal_Updated += EventFileScanner_ArousalUpdated;
             eventFileScanner.DD_Device_Update += EventFileScanner_DD_DeviceUpdate;

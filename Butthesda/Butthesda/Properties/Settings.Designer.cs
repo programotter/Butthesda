@@ -26,12 +26,36 @@ namespace Butthesda.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string GamePath {
+        public string GamePath_Skyrim {
             get {
-                return ((string)(this["GamePath"]));
+                return ((string)(this["GamePath_Skyrim"]));
             }
             set {
-                this["GamePath"] = value;
+                this["GamePath_Skyrim"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GamePath_SkyrimSe {
+            get {
+                return ((string)(this["GamePath_SkyrimSe"]));
+            }
+            set {
+                this["GamePath_SkyrimSe"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GamePath_Fallout4 {
+            get {
+                return ((string)(this["GamePath_Fallout4"]));
+            }
+            set {
+                this["GamePath_Fallout4"] = value;
             }
         }
     }
