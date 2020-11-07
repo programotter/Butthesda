@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C7945CA7-F210-48FC-A977-812059D1ED9C}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Butthesda</RootNamespace>
+    <AssemblyName>Butthesda</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Buttplug, Version=0.5.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Buttplug.0.5.9\lib\net47\Buttplug.dll</HintPath>
+    </Reference>
+    <Reference Include="Buttplug.Client.Connectors.WebsocketConnector, Version=0.5.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Buttplug.Client.Connectors.WebsocketConnector.0.5.9\lib\net47\Buttplug.Client.Connectors.WebsocketConnector.dll</HintPath>
+    </Reference>
+    <Reference Include="Buttplug.Server.Managers.UWPBluetoothManager, Version=0.5.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Buttplug.Server.Managers.UWPBluetoothManager.0.5.9\lib\net47\Buttplug.Server.Managers.UWPBluetoothManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Buttplug.Server.Managers.XInputGamepadManager, Version=0.5.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Buttplug.Server.Managers.XInputGamepadManager.0.5.9\lib\net47\Buttplug.Server.Managers.XInputGamepadManager.dll</HintPath>
+    </Reference>
+    <Reference Include="deniszykov.WebSocketListener, Version=4.2.4.0, Culture=neutral, PublicKeyToken=7f78616efb4a208d, processorArchitecture=MSIL">
+      <HintPath>..\packages\deniszykov.WebSocketListener.4.2.4\lib\net45\deniszykov.WebSocketListener.dll</HintPath>
+    </Reference>
+    <Reference Include="JetBrains.Annotations, Version=2020.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.2020.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="Namotion.Reflection, Version=1.0.12.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102, processorArchitecture=MSIL">
+      <HintPath>..\packages\Namotion.Reflection.1.0.12\lib\net45\Namotion.Reflection.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NJsonSchema, Version=10.1.21.0, Culture=neutral, PublicKeyToken=c2f9c3bdfae56102, processorArchitecture=MSIL">
+      <HintPath>..\packages\NJsonSchema.10.1.21\lib\net45\NJsonSchema.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XInput, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.XInput.4.2.0\lib\net45\SharpDX.XInput.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.11.1\lib\net461\System.Threading.Tasks.Dataflow.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
+      <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Custom_CheckBox.cs" />
+    <Compile Include="Device.cs" />
+    <Compile Include="EventFileScanner.cs" />
+    <Compile Include="Form_Controller.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Controller.Designer.cs">
+      <DependentUpon>Form_Controller.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_EventFileReader.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_EventFileReader.Designer.cs">
+      <DependentUpon>Form_EventFileReader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Event_logger.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Event_logger.Designer.cs">
+      <DependentUpon>Form_Event_logger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="form_main.Designer.cs">
+      <DependentUpon>Form_Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_ScanDevices.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_ScanDevices.Designer.cs">
+      <DependentUpon>Form_ScanDevices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunScript\Beats\BeatCollection.cs" />
+    <Compile Include="FunScript\Beats\BeatGroup.cs" />
+    <Compile Include="FunScript\Beats\BeatPattern.cs" />
+    <Compile Include="FunScript\Beats\SpeedPredictor.cs" />
+    <Compile Include="FunScript\Beats\TimeSpanExtensions.cs" />
+    <Compile Include="FunScript\Classes\BlockingQueue.cs" />
+    <Compile Include="FunScript\CommandSource.cs" />
+    <Compile Include="FunScript\Controls\PositionCollection.cs" />
+    <Compile Include="FunScript\Controls\QueueEntry.cs" />
+    <Compile Include="FunScript\Controls\TimedPosition.cs" />
+    <Compile Include="FunScript\Converters\StringToVersionConverter.cs" />
+    <Compile Include="FunScript\Devices\ButtplugAdapter.cs" />
+    <Compile Include="FunScript\Devices\ButtplugDevice.cs" />
+    <Compile Include="FunScript\Devices\CommandConverter.cs" />
+    <Compile Include="FunScript\Devices\Device.cs" />
+    <Compile Include="FunScript\Devices\DeviceCommandInformation.cs" />
+    <Compile Include="FunScript\Devices\DeviceController.cs" />
+    <Compile Include="FunScript\Devices\Interfaces\IActionBasedDevice.cs" />
+    <Compile Include="FunScript\Devices\Interfaces\IDevice.cs" />
+    <Compile Include="FunScript\Helpers\ExceptionHelper.cs" />
+    <Compile Include="FunScript\Scripts\BeatScriptAction.cs" />
+    <Compile Include="FunScript\Scripts\BeatsToFunScriptConverter.cs" />
+    <Compile Include="FunScript\Scripts\FunScriptAction.cs" />
+    <Compile Include="FunScript\Scripts\FunScriptFile.cs" />
+    <Compile Include="FunScript\Scripts\FunScriptLoader.cs" />
+    <Compile Include="FunScript\Scripts\IntermediateScriptActionEventArgs.cs" />
+    <Compile Include="FunScript\Scripts\RepeatablePattern.cs" />
+    <Compile Include="FunScript\Scripts\ScriptAction.cs" />
+    <Compile Include="FunScript\Scripts\ScriptActionEventArgs.cs" />
+    <Compile Include="FunScript\Scripts\ScriptFileFormat.cs" />
+    <Compile Include="FunScript\Scripts\ScriptHandler.cs" />
+    <Compile Include="FunScript\Scripts\ScriptLoader.cs" />
+    <Compile Include="FunScript\TimeSource\TimeSource.cs" />
+    <Compile Include="FunScript\ViewModels\PositionFilterMode.cs" />
+    <Compile Include="Games.cs" />
+    <Compile Include="Memory\AOB_Scanner.cs" />
+    <Compile Include="Memory\Memory.cs" />
+    <Compile Include="Memory\Memory_Thread.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VibrationEvents.cs" />
+    <EmbeddedResource Include="Form_Controller.resx">
+      <DependentUpon>Form_Controller.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_EventFileReader.resx">
+      <DependentUpon>Form_EventFileReader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Event_logger.resx">
+      <DependentUpon>Form_Event_logger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="form_main.resx">
+      <DependentUpon>Form_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_ScanDevices.resx">
+      <DependentUpon>Form_ScanDevices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
