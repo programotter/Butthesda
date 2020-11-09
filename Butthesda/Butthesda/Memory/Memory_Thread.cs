@@ -46,7 +46,7 @@ namespace Butthesda
             memory = new Memory(Game_Name);
         }
 
-        public void Init()
+        public bool Init()
 		{
             if (Game_Name == Games.Skyrim.Executable_Name)
             {
@@ -61,7 +61,7 @@ namespace Butthesda
 
             if (ptr_data == IntPtr.Zero)
             {
-               return;
+                return false;//return failure
             }
 
             Debug_Message?.Invoke(this, new StringArg(String.Format("Found data address: 0x{0:X}",ptr_data.ToInt64())));
@@ -80,14 +80,15 @@ namespace Butthesda
 
             Thread_Check_Game_Running = new Thread(Check_Game_Running) { IsBackground = true };
             Thread_Check_Game_Running.Start();
+            return true;//return succes
         }
 
 
         public void Close()
         {
-            Thread_Check_Events.Abort();
-            Thread_Check_Timer.Abort();
-            Thread_Check_Game_Running.Abort();
+            if(Thread_Check_Events!= null) try { Thread_Check_Events.Abort(); } catch { };
+            if (Thread_Check_Timer != null) try { Thread_Check_Timer.Abort(); } catch { };
+            if (Thread_Check_Game_Running != null) try { Thread_Check_Game_Running.Abort(); } catch { };
         }
 
 

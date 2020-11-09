@@ -33,7 +33,10 @@ namespace Butthesda
 
 
             vibrationEvents = new VibrationEvents(Game_Path);
+            vibrationEvents.Notification_Message += Notivication_Message;
             vibrationEvents.Warning_Message += Warning_Message;
+            vibrationEvents.Error_Message += Error_Message;
+            vibrationEvents.Debug_Message += Debug_Message;
 
             memory_scanner = new Memory_Scanner(Game_Name);
             memory_scanner.Notification_Message += Notivication_Message;
@@ -48,7 +51,7 @@ namespace Butthesda
             memory_scanner.GameOpened += Memory_Scanner_GameOpened;
             memory_scanner.GameClosed += Memory_Scanner_GameClosed;
 
-            eventFileScanner = new EventFileScanner(Game_Path, memory_scanner);
+            eventFileScanner = new EventFileScanner(Game_Path, memory_scanner, vibrationEvents);
             eventFileScanner.Notification_Message += Notivication_Message;
             eventFileScanner.Error_Message += Error_Message;
             eventFileScanner.Debug_Message += Debug_Message;
@@ -68,13 +71,6 @@ namespace Butthesda
 
             }
 
-            //We need to start it after the constructor is done, because we need the event handlers setup first
-            new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
-                memory_scanner.Init();
-                vibrationEvents.Init();
-            }).Start();
 
             Thread_eventFileScanner = new Thread(new ThreadStart(eventFileScanner.Run))
             {
@@ -82,9 +78,34 @@ namespace Butthesda
             };
             Thread_eventFileScanner.Start();
 
+
+            //We need to start it after the constructor is done, because we need the event handlers setup first
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+
+                vibrationEvents.Init();
+                bool success = memory_scanner.Init();
+
+                Thread.Sleep(2000);//we dont want to restart to fast after eachother
+                if (!success)
+                {
+                    Request_Restart();
+                }
+
+                
+            }).Start();
+
         }
 
+        private void Request_Restart()
+        {
+            Thread_eventFileScanner.Abort();
+            memory_scanner.Close();
 
+            RequestRestart = true;
+            Invoke((MethodInvoker)(() => this.Close()));
+        }
 
 
 
@@ -98,9 +119,7 @@ namespace Butthesda
         
         private void Memory_Scanner_GameOpened(object sender, EventArgs e)
 		{
-            RequestRestart = true;
-            Invoke((MethodInvoker)(() => this.Close()));
-           
+            Request_Restart();
         }
         
 
@@ -316,7 +335,6 @@ namespace Butthesda
 
         private void Event_viewer_TextChanged(object sender, EventArgs e)
         {
-            record_video = false;
             event_viewer.SelectionStart = event_viewer.Text.Length;
             // scroll it automatically
             event_viewer.ScrollToCaret();
@@ -328,13 +346,9 @@ namespace Butthesda
 
 
 
-
-        public static bool record_video = false;
-
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
         {
 
-            record_video = checkBox1.Checked;
         }
 
 		private void CheckBox_ShowDebug_CheckedChanged(object sender, EventArgs e)

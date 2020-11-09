@@ -42,14 +42,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Butthesda.exe" size="142856">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Butthesda.exe" size="228360">
       <assemblyIdentity name="Butthesda" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>hxeYj241Y16QH7hvAFa3f359UrFFjnIIZgkMpFzovqg=</dsig:DigestValue>
+        <dsig:DigestValue>bhqneAW/3yVqMIZTD+D2Cps+DEUFnGj4i3iH4ExBu9c=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_EventFileReader));
 			this.event_viewer = new System.Windows.Forms.RichTextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.progressBar_arousal = new System.Windows.Forms.ProgressBar();
@@ -317,6 +318,8 @@
 			this.Controls.Add(this.progressBar_arousal);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.event_viewer);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "Form_EventFileReader";
 			this.Text = "Event file reader";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_EventFileReader_FormClosing);

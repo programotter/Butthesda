@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Main));
 			this.button1 = new System.Windows.Forms.Button();
 			this.listBox_devices = new System.Windows.Forms.ComboBox();
 			this.button3 = new System.Windows.Forms.Button();
@@ -251,6 +252,7 @@
 			this.Controls.Add(this.listBox_devices);
 			this.Controls.Add(this.button1);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "Form_Main";
 			this.Text = "Butthesda (ButtplugIO integration for Bethesda games)";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Main_FormClosing);

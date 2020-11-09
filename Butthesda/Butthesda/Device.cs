@@ -79,7 +79,6 @@ namespace Butthesda
         }
 
 
-
         private void On_Animation_Timer_Reset(object sender, EventArgs e)
         {
             foreach(Running_Event running_event in running_events)
@@ -94,9 +93,9 @@ namespace Butthesda
         public event Notify EventRemoved;
         public event Notify EventsCleared;
 
-        public Running_Event AddEvent(List<FunScriptAction> actions,bool synced_by_animation)
+        public Running_Event AddEvent(string name,List<FunScriptAction> actions,bool synced_by_animation)
         {
-            Running_Event new_event = new Running_Event(actions, synced_by_animation);
+            Running_Event new_event = new Running_Event(name, actions, synced_by_animation);
             EventAdded?.Invoke();
             lock (running_events)
             {
@@ -271,6 +270,8 @@ namespace Butthesda
 
     public class Running_Event
     {
+        public string name;
+
         List<FunScriptAction> actions;
         DateTime timeStarted;
 
@@ -290,10 +291,11 @@ namespace Butthesda
             ended = true;
         }
 
-        public Running_Event() : this(new List<FunScriptAction>(),false) { }
+        public Running_Event() : this("",new List<FunScriptAction>(),false) { }
 
-        public Running_Event(List<FunScriptAction> actions, bool synced_by_animation)
+        public Running_Event(string name, List<FunScriptAction> actions, bool synced_by_animation)
         {
+            this.name = name;
             this.synced_by_animation = synced_by_animation;
             this.actions = actions;
             this.ended = false;

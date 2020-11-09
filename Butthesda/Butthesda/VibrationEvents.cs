@@ -12,7 +12,7 @@ namespace Butthesda
 
     public class VibrationEvents
     {
-
+        public event EventHandler Notification_Message;
         public event EventHandler Warning_Message;
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
@@ -30,7 +30,6 @@ namespace Butthesda
         }
 
 
-        private List<Actor_Data> playingEvents = new List<Actor_Data>();
 
         private List<Actor_Data> events = new List<Actor_Data>();
 
@@ -53,21 +52,36 @@ namespace Butthesda
                     events.Add(new Actor_Data(name, event_dir));
                 }
             }
+
+            int funscript_count = 0;
+            foreach (Actor_Data p_d in events)
+            {
+                if (p_d == null) continue;
+                foreach (BodyPart_Data b_d in p_d.bodyparts)
+                {
+                    if (b_d == null) continue;
+                    foreach (EventType_Data e_d in b_d.eventTypes)
+                    {
+                        funscript_count++;
+                    }
+                }
+            }
+            Notification_Message?.Invoke(this, new StringArg(String.Format("Registered {0} lose events, with a total of {1} funscripts", events.Count, funscript_count)));
         }
 
 
         public Running_Event Play_Event(string name)
         {
             name = name.ToLower();
-            Warning_Message?.Invoke(this, new StringArg("PlayEvent: searching: " + name));
             foreach (Actor_Data event_data in events)
             {
                 if (event_data.name == name)
                 {
+                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
                     return PlayEvent(event_data);
                 }
             }
-            Warning_Message?.Invoke(this, new StringArg("PlayEvent: count not find: " + name));
+            Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
             return new Running_Event();
         }
 
@@ -88,7 +102,7 @@ namespace Butthesda
                     {
                         if (device.HasType(bodyPart_id, eventType_id))
                         {
-                            running_Event = device.AddEvent(eventType.actions, synced_by_animation);
+                            running_Event = device.AddEvent(event_data.name, eventType.actions, synced_by_animation);
                         }
                     }
                 }
@@ -123,6 +137,31 @@ namespace Butthesda
                     SexLab_Animations.Add(new Animation_Data(name, animation_dir));
                 }
             }
+
+
+            int funscript_count = 0;
+
+            foreach(Animation_Data sl_a in SexLab_Animations)
+			{
+				foreach (Stage_Data s_d in sl_a.stages)
+				{
+                    if (s_d == null) continue;
+                    foreach (Actor_Data p_d in s_d.positions)
+					{
+                        if (p_d == null) continue;
+                        foreach (BodyPart_Data b_d in p_d.bodyparts)
+						{
+                            if (b_d == null) continue;
+							foreach (EventType_Data e_d in b_d.eventTypes)
+							{
+                                funscript_count++;
+                            }
+						}
+					}
+				}
+			}
+
+            Notification_Message?.Invoke(this,new StringArg(String.Format("Registered {0} SexLab animations, with a total of {1} funscripts", SexLab_Animations.Count, funscript_count)));
         }
 
 

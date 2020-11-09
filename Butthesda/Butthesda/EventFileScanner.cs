@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Media;
 using System.Text;
@@ -42,10 +43,12 @@ namespace Butthesda
         }
 
         private readonly string Game_Path;
+        private readonly VibrationEvents vibrationEvents;
 
-        public EventFileScanner(string Game_Path, Memory_Scanner memory_scanner)
+        public EventFileScanner(string Game_Path, Memory_Scanner memory_scanner, VibrationEvents vibrationEvents)
         {
             this.Game_Path = Game_Path;
+            this.vibrationEvents = vibrationEvents;
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
         }
 
@@ -74,7 +77,7 @@ namespace Butthesda
 
 
         private Running_Event dd_horny_event = new Running_Event();
-
+        private List<Custom_Running_Event> Custom_Running_Events = new List<Custom_Running_Event>();
 
         public void Run()
         {
@@ -103,7 +106,10 @@ namespace Butthesda
                         line = line.ToLower().Replace("\'", "\"");
 
                         //Console.WriteLine(line);
-                        if (!line.StartsWith("{")) { continue; };
+                        if (!line.StartsWith("{")) {
+                            Debug_Message?.Invoke(this, new StringArg(String.Format("ESP msg - {0}",line)));
+                            continue;
+                        };
 
                         JObject json;
                         try { json = JObject.Parse(line); }
@@ -197,43 +203,6 @@ namespace Butthesda
                                         //form_EventFileReader.GamePaused(false);
                                         inMenu = false;
                                         break;
-                                    case "animation"://not used anymore, but we need to re implement this part in the new framework
-                                        string name_property = (string)json.Property("name");
-                                        switch (name_property)
-                                        {
-                                            case "footleft":
-                                            case "footright":
-                                            case "FootSprintLeft":
-                                            case "FootSprintRight":
-                                            case "tailmtidle":
-                                                if (dd_devices[(int)DD_Device_Location.Anal] != DD_Device_Type.none)
-                                                {
-                                                    //VibrationEvents.Play_Event("dd device footstep anal");
-                                                }
-                                                if (dd_devices[(int)DD_Device_Location.Vaginal] != DD_Device_Type.none)
-                                                {
-                                                    //VibrationEvents.Play_Event("dd device footstep vaginal");
-                                                }
-
-                                                break;
-                                            case "jumpup":
-                                            case "jumplandend":
-
-                                            case "idlechairsitting":
-                                            case "idlechairgetup":
-
-                                            case "soundplay.npchorsemount":
-                                            case "soundplay.npchorsedismount":
-                                            case "footback":
-                                            case "footfront":
-                                            case "jumpbegin":
-                                            case "horselocomotion":
-                                            
-                                            case "idlestop":
-                                                
-                                                break;
-                                        }
-                                        break;
                                 }
                                 break;
                             case "sla":
@@ -266,12 +235,12 @@ namespace Butthesda
                                                 if (dd_device_new_type != DD_Device_Type.none)
                                                 {//device was removed
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device equiped: " + s_location + " " + s_location_type));
-                                                    //VibrationEvents.Play_Event("dd device equiped " + s_location);
+                                                    vibrationEvents.Play_Event("dd device equiped " + s_location);
                                                 }
                                                 else
                                                 {//device was added
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device de-equiped: " + s_location + " " + s_location_type));
-                                                    //VibrationEvents.Play_Event("dd device de-equiped " + s_location);
+                                                    vibrationEvents.Play_Event("dd device de-equiped " + s_location);
                                                 }
                                                 //break;
                                             }
@@ -416,39 +385,39 @@ namespace Butthesda
                                             int stage = (int)json.Property("stage")-1;
                                             int position = (int)json.Property("pos");
                                             bool usingStrapon = (bool)json.Property("usingstrappon");
-                                            Warning_Message?.Invoke(this, new StringArg("SexLab " + event_property + " : \"" + name + "\" stage:" + stage + " position: " + position + " using strapon: " + usingStrapon));
-                                            //VibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
+                                            Notification_Message?.Invoke(this, new StringArg("SexLab " + event_property + " : \"" + name + "\" stage:" + stage + " position: " + position + " using strapon: " + usingStrapon));
+                                            vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
                                             if (event_property == "animation changed")
                                             {
-                                                //VibrationEvents.SexLab_Update_Event();
+                                                vibrationEvents.SexLab_Update_Event();
                                             }
                                         }
                                         break;
                                     case "animation ended":
-                                        Warning_Message?.Invoke(this, new StringArg("SexLab animation stopped"));
-                                        //VibrationEvents.SexLab_StopAnimation();
+                                        Notification_Message?.Invoke(this, new StringArg("SexLab animation stopped"));
+                                        vibrationEvents.SexLab_StopAnimation();
                                         break;
                                     case "stage started":
                                         {
                                             int stage = (int)json.Property("stage")-1;
-                                            Warning_Message?.Invoke(this, new StringArg("SexLab stage started: " + stage));
-                                            //VibrationEvents.SexLab_SetStage(stage);
+                                            Notification_Message?.Invoke(this, new StringArg("SexLab stage started: " + stage));
+                                            vibrationEvents.SexLab_SetStage(stage);
                                         }
                                         break;
                                     case "position changed":
                                         {
                                             int position = (int)json.Property("pos");
-                                            Warning_Message?.Invoke(this, new StringArg("SexLab position changed: " + position));
-                                            //VibrationEvents.SexLab_SetPosition(position);
+                                            Notification_Message?.Invoke(this, new StringArg("SexLab position changed: " + position));
+                                            vibrationEvents.SexLab_SetPosition(position);
                                         }
                                         break;
                                     case "orgasm started":
-                                        Warning_Message?.Invoke(this, new StringArg("SexLab orgasm"));
-                                        //VibrationEvents.SexLab_Start_Orgasm();
+                                        Notification_Message?.Invoke(this, new StringArg("SexLab orgasm"));
+                                        vibrationEvents.SexLab_Start_Orgasm();
                                         break;
                                     case "orgasm ended":
-                                        Warning_Message?.Invoke(this, new StringArg("SexLab orgasm ended"));
-                                        //VibrationEvents.SexLab_Stop_Orgasm();
+                                        Notification_Message?.Invoke(this, new StringArg("SexLab orgasm ended"));
+                                        vibrationEvents.SexLab_Stop_Orgasm();
                                         break;
                                 }
                                 break;
@@ -474,15 +443,50 @@ namespace Butthesda
                                         break;
                                 }
                                 break;
-                            
+                            case "custom":
+
+                                int id = (int)json.Property("type");
+
+                                if (event_property == "start")
+								{
+                                    Custom_Running_Events.Add(new Custom_Running_Event(id, vibrationEvents.Play_Event(type_property)));
+                                }
+								else
+								{
+                                    for(int i = Custom_Running_Events.Count-1; i >= 0 ; i--)
+									{
+                                        Custom_Running_Event custom_Event = Custom_Running_Events[i];
+                                        if (custom_Event.id == id)
+                                        {
+                                            custom_Event.running_Event.End();
+                                        }
+										if (custom_Event.running_Event.ended)
+										{
+                                            Custom_Running_Events.RemoveAt(i);
+                                        }
+
+                                    }
+                                }
+                                break;
           
                         }
 
-                        //VibrationEvents.animations;
+
 
                     }
                 }
             }
         }       
+    }
+
+	class Custom_Running_Event
+	{
+        public int id;
+        public Running_Event running_Event;
+        public Custom_Running_Event(int id, Running_Event running_Event)
+		{
+            this.id = id;
+            this.running_Event = running_Event;
+		}
     }
 }
