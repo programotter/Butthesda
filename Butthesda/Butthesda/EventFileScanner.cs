@@ -41,13 +41,12 @@ namespace Butthesda
             normal
         }
 
-        private readonly string Link_File_Path;
+        private readonly string Game_Path;
 
-        public EventFileScanner(string Link_File_Path, Memory_Scanner memory_scanner)
+        public EventFileScanner(string Game_Path, Memory_Scanner memory_scanner)
         {
-            this.Link_File_Path = Link_File_Path;
+            this.Game_Path = Game_Path;
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
-
         }
 
         private void MemoryScanner_AnimationEvent(object sender, EventArgs e)
@@ -80,17 +79,19 @@ namespace Butthesda
         public void Run()
         {
             Thread.Sleep(100);
-            string path = Link_File_Path;
-            return;
+            string path = Game_Path + @"\FunScripts\link.txt";
+
             const Int32 BufferSize = 128;
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
             {
+                long line_nr = 0;
                 bool loading_game = true;
                 bool skipping_old = true;
                 while (true)
                 {
                     String line = streamReader.ReadLine();
+                    
                     if (line == null)
                     {
                         skipping_old = false; //we skipped all old lines
@@ -98,6 +99,7 @@ namespace Butthesda
                     }
                     else
                     {
+                        line_nr++;
                         line = line.ToLower().Replace("\'", "\"");
 
                         //Console.WriteLine(line);
@@ -107,7 +109,7 @@ namespace Butthesda
                         try { json = JObject.Parse(line); }
                         catch
                         {
-                            Warning_Message?.Invoke(this, new StringArg("Count not format line: " + line));
+                            Warning_Message?.Invoke(this, new StringArg(String.Format("Couldn't format line {0}: {1}",line_nr, line)));
                             continue;
                         };
 
@@ -180,12 +182,12 @@ namespace Butthesda
                                         {
                                             mods_found += "- Soul Gem Oven\n";
                                         }
-
+                                        Notification_Message?.Invoke(this, new StringArg("Loading save game"));
                                         Save_Loaded?.Invoke(this, new StringArg(mods_found));
                                         break;
                                     case "loading save done":
                                         loading_game = false;
-                                        Notification_Message?.Invoke(this, new StringArg("Save Game Loaded!"));
+                                        Notification_Message?.Invoke(this, new StringArg("Save game Loaded"));
                                         break;
                                     case "menu opened"://TODO might need to re add this if the animation timer based check doest work good enough
                                         //form_EventFileReader.GamePaused(true);

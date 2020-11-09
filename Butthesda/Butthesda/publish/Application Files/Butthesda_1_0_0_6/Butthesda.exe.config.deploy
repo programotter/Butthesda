@@ -31,6 +31,18 @@
       <setting name="GamePath_Fallout4" serializeAs="String">
         <value />
       </setting>
+      <setting name="Show_notifications" serializeAs="String">
+        <value>True</value>
+      </setting>
+      <setting name="Show_warnings" serializeAs="String">
+        <value>True</value>
+      </setting>
+      <setting name="Show_errors" serializeAs="String">
+        <value>True</value>
+      </setting>
+      <setting name="Show_debug_info" serializeAs="String">
+        <value>True</value>
+      </setting>
     </Butthesda.Properties.Settings>
   </userSettings>
 </configuration>

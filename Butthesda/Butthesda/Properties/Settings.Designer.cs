@@ -58,5 +58,53 @@ namespace Butthesda.Properties {
                 this["GamePath_Fallout4"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Show_notifications {
+            get {
+                return ((bool)(this["Show_notifications"]));
+            }
+            set {
+                this["Show_notifications"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Show_warnings {
+            get {
+                return ((bool)(this["Show_warnings"]));
+            }
+            set {
+                this["Show_warnings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Show_errors {
+            get {
+                return ((bool)(this["Show_errors"]));
+            }
+            set {
+                this["Show_errors"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Show_debug_info {
+            get {
+                return ((bool)(this["Show_debug_info"]));
+            }
+            set {
+                this["Show_debug_info"] = value;
+            }
+        }
     }
 }

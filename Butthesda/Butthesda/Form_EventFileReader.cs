@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Security.RightsManagement;
 using System.Threading;
 using System.Windows.Forms;
 using static Butthesda.Program;
@@ -10,34 +13,53 @@ namespace Butthesda
     public partial class Form_EventFileReader : Form
     {
         Thread Thread_eventFileScanner;
+        public bool RequestRestart = false;
+        private readonly Memory_Scanner memory_scanner;
+        private readonly VibrationEvents vibrationEvents;
+        private readonly EventFileScanner eventFileScanner;
+        private readonly string Game_Path;
 
-        private Memory_Scanner memory_scanner;
-        private VibrationEvents vibrationEvents;
-        public Form_EventFileReader(string Game_Name, string Link_File_Path)
+        public Form_EventFileReader(string Game_Name, string Game_Path)
         {
+            this.Game_Path = Game_Path;
+
             InitializeComponent();
-            vibrationEvents = new VibrationEvents();
+
+            //load presets
+            checkBox_ShowWarnings.Checked = Properties.Settings.Default.Show_warnings;
+            checkBox_ShowErrors.Checked = Properties.Settings.Default.Show_errors;
+            checkBox_ShowNotifications.Checked = Properties.Settings.Default.Show_notifications;
+            checkBox_ShowDebug.Checked = Properties.Settings.Default.Show_debug_info;
+
+
+            vibrationEvents = new VibrationEvents(Game_Path);
+            vibrationEvents.Warning_Message += Warning_Message;
 
             memory_scanner = new Memory_Scanner(Game_Name);
+            memory_scanner.Notification_Message += Notivication_Message;
+            memory_scanner.Warning_Message += Warning_Message;
+            memory_scanner.Error_Message += Error_Message;
+            memory_scanner.Debug_Message += Debug_Message;
             memory_scanner.AnimationEvent += Memory_Scanner_AnimationEvent;
             memory_scanner.AnimationTimeResetted += Memory_Scanner_AnimationTimeResetted;
             memory_scanner.AnimationTimeUpdated += Memory_Scanner_AnimationTimeUpdated;
             memory_scanner.GamePaused += Memory_Scanner_GamePaused;
             memory_scanner.GameResumed += Memory_Scanner_GameResumed;
+            memory_scanner.GameOpened += Memory_Scanner_GameOpened;
+            memory_scanner.GameClosed += Memory_Scanner_GameClosed;
 
-
-            EventFileScanner eventFileScanner = new EventFileScanner(Link_File_Path, memory_scanner);
+            eventFileScanner = new EventFileScanner(Game_Path, memory_scanner);
+            eventFileScanner.Notification_Message += Notivication_Message;
+            eventFileScanner.Error_Message += Error_Message;
+            eventFileScanner.Debug_Message += Debug_Message;
+            eventFileScanner.Warning_Message += Warning_Message;
             eventFileScanner.Save_Loaded += EventFileScanner_SaveLoaded;
             eventFileScanner.Arousal_Updated += EventFileScanner_ArousalUpdated;
             eventFileScanner.DD_Device_Update += EventFileScanner_DD_DeviceUpdate;
 
-            Thread_eventFileScanner = new Thread(new ThreadStart(eventFileScanner.Run))
-            {
-                IsBackground = true
-            };
-            Thread_eventFileScanner.Start();
 
-            
+
+
             foreach (Device d in Device.devices)
             {
                 d.EventAdded += Event_Device_Added;
@@ -46,10 +68,74 @@ namespace Butthesda
 
             }
 
-            vibrationEvents.Warning_Message += Event_Warning;
+            //We need to start it after the constructor is done, because we need the event handlers setup first
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                memory_scanner.Init();
+                vibrationEvents.Init();
+            }).Start();
 
+            Thread_eventFileScanner = new Thread(new ThreadStart(eventFileScanner.Run))
+            {
+                IsBackground = true
+            };
+            Thread_eventFileScanner.Start();
 
         }
+
+
+
+
+
+        private void Memory_Scanner_GameClosed(object sender, EventArgs e)
+        {
+            File.WriteAllText(Game_Path + @"\FunScripts\link.txt", string.Empty);
+            Invoke((MethodInvoker)(() => game_running = false));
+            Update_Game_State();
+        }
+
+        
+        private void Memory_Scanner_GameOpened(object sender, EventArgs e)
+		{
+            RequestRestart = true;
+            Invoke((MethodInvoker)(() => this.Close()));
+           
+        }
+        
+
+        private void Notivication_Message(object sender, EventArgs e)
+		{
+            if (!checkBox_ShowNotifications.Checked) return;
+            StringArg e2 = (StringArg)e;
+            WriteTo_EventViewer(sender.GetType().Name+" - " + e2.String, Color.Black);
+        }
+
+
+        private void Error_Message(object sender, EventArgs e)
+        {
+            if (!checkBox_ShowErrors.Checked) return;
+            StringArg e2 = (StringArg)e;            
+            WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Red);
+        }
+
+
+        private void Debug_Message(object sender, EventArgs e)
+        {
+            if (!checkBox_ShowDebug.Checked) return;
+            StringArg e2 = (StringArg)e;
+            WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Gray);
+        }
+
+
+        private void Warning_Message(object sender, EventArgs e)
+        {
+            if (!checkBox_ShowWarnings.Checked) return;
+            StringArg e2 = (StringArg)e;
+            WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Orange);
+        }
+
+
 
         private void EventFileScanner_DD_DeviceUpdate(object sender, EventArgs e)
         {
@@ -71,17 +157,14 @@ namespace Butthesda
             Clear_EventViewer();
 
             Invoke((MethodInvoker)(() => text_detected_mods.Text = e2.String));
-            WriteTo_EventViewer("Loaded Save Game");
         }
 
         private void Memory_Scanner_GamePaused(object sender, EventArgs e)
         {
-            WriteTo_EventViewer("- Game Paused");
             GamePaused(true);
         }
         private void Memory_Scanner_GameResumed(object sender, EventArgs e)
         {
-            WriteTo_EventViewer("- Game Resumed!");
             GamePaused(false);
         }
 
@@ -105,16 +188,10 @@ namespace Butthesda
         private void Memory_Scanner_AnimationEvent(object sender, EventArgs e)
         {
             StringArg e2 = (StringArg)e;
-            WriteTo_EventViewer("Animation: "+e2.String);
+            //WriteTo_EventViewer("Animation: "+e2.String);
         }
 
 
-
-        private void Event_Warning(object sender, EventArgs e)
-        {
-            StringArg e2 = (StringArg)e;
-            WriteTo_EventViewer(e2.String);
-        }
 
         private int running_events = 0;
 
@@ -143,14 +220,29 @@ namespace Butthesda
             }));
         }
 
+
+
+        internal void WriteTo_EventViewer(string text, Color color)
+        {
+
+            Invoke((MethodInvoker)(() => {
+                int start = event_viewer.Text.Length;
+                event_viewer.AppendText(text + "\n");
+                int finished = event_viewer.Text.Length;
+
+                event_viewer.Select(start, finished); //Select text within 0 and 8
+                event_viewer.SelectionColor = color;
+            }));
+        }
+
         internal void WriteTo_EventViewer(string text)
         {
-            Invoke((MethodInvoker)(() => event_viewer.AppendText(text + "\n")));
+            WriteTo_EventViewer(text, Color.Black);
         }
 
         internal void Clear_EventViewer()
         {
-            Invoke((MethodInvoker)(() => event_viewer.Clear()));
+            //Invoke((MethodInvoker)(() => event_viewer.Clear()));
         }
 
 
@@ -173,14 +265,9 @@ namespace Butthesda
         }
 
 
-        bool game_running = false;
+        bool game_running = true;
         bool game_paused = false;
 
-        internal void GameRunning(bool running)
-        {
-            Invoke((MethodInvoker)(() => game_running = running));
-            Update_Game_State();
-        }
 
         internal void GamePaused(bool paused)
         {
@@ -235,20 +322,11 @@ namespace Butthesda
             event_viewer.ScrollToCaret();
         }
 
-        private void Label1_Click(object sender, EventArgs e)
-        {
 
-        }
 
-        private void Form_EventFileReader_Load(object sender, EventArgs e)
-        {
 
-        }
 
-        private void Label8_Click(object sender, EventArgs e)
-        {
 
-        }
 
 
         public static bool record_video = false;
@@ -259,19 +337,29 @@ namespace Butthesda
             record_video = checkBox1.Checked;
         }
 
-        private void Label9_Click(object sender, EventArgs e)
-        {
-
+		private void CheckBox_ShowDebug_CheckedChanged(object sender, EventArgs e)
+		{
+            Properties.Settings.Default.Show_debug_info = checkBox_ShowDebug.Checked;
+            Properties.Settings.Default.Save();
         }
 
-        private void label10_Click(object sender, EventArgs e)
-        {
-
+		private void CheckBox_ShowNotification_CheckedChanged(object sender, EventArgs e)
+		{
+            Properties.Settings.Default.Show_notifications = checkBox_ShowNotifications.Checked;
+            Properties.Settings.Default.Save();
         }
 
-        private void label9_Click_1(object sender, EventArgs e)
-        {
-
+		private void CheckBox_ShowErrors_CheckedChanged(object sender, EventArgs e)
+		{
+            Properties.Settings.Default.Show_errors = checkBox_ShowErrors.Checked;
+            Properties.Settings.Default.Save();
         }
-    }
+
+		private void CheckBox_ShowWarnings_CheckedChanged(object sender, EventArgs e)
+		{
+            Properties.Settings.Default.Show_warnings = checkBox_ShowWarnings.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+	}
 }

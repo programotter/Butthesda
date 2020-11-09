@@ -15,6 +15,10 @@ namespace Butthesda
 
     class Memory_Scanner
     {
+        public event EventHandler Notification_Message;
+        public event EventHandler Error_Message;
+        public event EventHandler Debug_Message;
+        public event EventHandler Warning_Message;
         
         public event EventHandler AnimationEvent;
         public event EventHandler AnimationTimeResetted;
@@ -39,10 +43,12 @@ namespace Butthesda
         public Memory_Scanner(string game)
         {
             Game_Name = game;
-
             memory = new Memory(Game_Name);
+        }
 
-            if(Game_Name == Games.Skyrim.Executable_Name)
+        public void Init()
+		{
+            if (Game_Name == Games.Skyrim.Executable_Name)
             {
                 timer_offsets = new int[] { 0xF10588, 0x88, 0x4, 0x100, 0x10, 0x98, 0x58, 0x0, 0x44 };
                 ptr_data = Inject_TESV();
@@ -53,7 +59,18 @@ namespace Butthesda
                 ptr_data = Inject_SkyrimSE();
             }
 
-            if (ptr_data == IntPtr.Zero) return;
+            if (ptr_data == IntPtr.Zero)
+            {
+               return;
+            }
+
+            Debug_Message?.Invoke(this, new StringArg(String.Format("Found data address: 0x{0:X}",ptr_data.ToInt64())));
+            
+            IntPtr test1 = memory.ReadPointer(timer_offsets);
+            Debug_Message?.Invoke(this, new StringArg(String.Format("Animation timer address is currenty: 0x{0:X}", test1.ToInt64())));
+
+            float test2 = memory.ReadFloat(test1);
+            Debug_Message?.Invoke(this, new StringArg("animation timer is:"+ test2));
 
             Thread_Check_Events = new Thread(Check_Events) { IsBackground = true };
             Thread_Check_Events.Start();
@@ -63,7 +80,6 @@ namespace Butthesda
 
             Thread_Check_Game_Running = new Thread(Check_Game_Running) { IsBackground = true };
             Thread_Check_Game_Running.Start();
-
         }
 
 
@@ -78,7 +94,7 @@ namespace Butthesda
 
         void Check_Game_Running()
         {
-            bool was_running = false;
+            bool was_running = true;
             while (true)
             {
                 Thread.Sleep(100);
@@ -89,10 +105,12 @@ namespace Butthesda
 
                     if (was_running)
                     {
+                        Notification_Message?.Invoke(this, new StringArg("Game was opened"));
                         GameOpened?.Invoke(this, new EventArgs());
                     }
                     else
                     {
+                        Notification_Message?.Invoke(this, new StringArg("Game was closed"));
                         GameClosed?.Invoke(this, new EventArgs());
                     }
                 }
@@ -121,15 +139,18 @@ namespace Butthesda
                 IntPtr ptr = ptr_data;
                 Thread.Sleep(50);
 
-
                 //check if events have played
                 while (true)
                 {
+                    IntPtr temp_debugging = ptr;
                     IntPtr name_address = memory.ReadPointer(ptr);
                     if (name_address == IntPtr.Zero) break;
-
+                    
                     string name = memory.ReadString(name_address, 30);
                     int amount = memory.ReadInt32(ptr + 0x8);
+
+                    //Message?.Invoke(this, new StringArg(String.Format("event loop, address: 0x{0:X}, nameAdress {1:X}, name: {2}, amount: {3}", temp_debugging.ToInt64(), name_address.ToInt64(), name, amount)));
+
                     bool found = false;
                     foreach (AnimationItem a in AnimationList)
                     {
@@ -138,10 +159,11 @@ namespace Butthesda
                             found = true;
                             if (a.amount != amount)
                             {
-                                a.amount = amount;
+                                a.amount = amount;//update to new amount
                                 if (!First_Check)
                                 {
-                                    Console.WriteLine("Done first");
+                                    Notification_Message?.Invoke(this, new StringArg(String.Format("Animation playing name: {0}",name)));
+                                    Debug_Message?.Invoke(this, new StringArg(String.Format("Animation playing counter: {0}, address: 0x{1:X}, nameAddress: 0x{2:X}", amount, temp_debugging.ToInt64(), name_address.ToInt64())));
                                     AnimationEvent?.Invoke(this, new StringArg(name));
                                 }
                             }
@@ -154,7 +176,8 @@ namespace Butthesda
                         AnimationList.Add(new AnimationItem(name, amount));
                         if (!First_Check)
                         {
-                            Console.WriteLine("Done first");
+                            Notification_Message?.Invoke(this, new StringArg(String.Format("Animation playing name: {0}", name)));
+                            Debug_Message?.Invoke(this, new StringArg(String.Format("Animation playing counter: {0}, address: 0x{1:X}, nameAddress: 0x{2:X}", amount, temp_debugging.ToInt64(), name_address.ToInt64())));
                             AnimationEvent?.Invoke(this, new StringArg(name));
                         }
                     }
@@ -198,6 +221,7 @@ namespace Butthesda
                         if (time > old_time + new TimeSpan(0, 0, 0, 0, 150))
                         {
                             gamePaused = true;
+                            Notification_Message?.Invoke(this, new StringArg("Game paused"));
                             GamePaused?.Invoke(this, EventArgs.Empty);
                         }
                     }
@@ -207,6 +231,7 @@ namespace Butthesda
                     if (gamePaused)
                     {
                         gamePaused = false;
+                        Notification_Message?.Invoke(this, new StringArg("Game resumed"));
                         GameResumed?.Invoke(this, EventArgs.Empty);
                     }
                     old_time = time;
@@ -215,7 +240,6 @@ namespace Butthesda
                 old_timer = timer;
             }
         }
-
 
 
         private IntPtr Inject_TESV()
@@ -230,6 +254,7 @@ namespace Butthesda
             IntPtr ptr_inject = (IntPtr)aob_scanner.FindPattern();
             if (ptr_inject == IntPtr.Zero)
             {
+                Error_Message?.Invoke(this, new StringArg("Could not inject, did the game load past the main menu?"));
                 return IntPtr.Zero;
             }
 
@@ -239,6 +264,7 @@ namespace Butthesda
             byte b = memory.ReadByte(ptr_inject);
             if (b == 0xE9)
             {
+                Notification_Message?.Invoke(this, new StringArg("Skipping injection (already injected)"));
                 return (IntPtr)((long)memory.ReadInt32(ptr_inject + 0x1) + (long)ptr_inject) + 5 + bytes_program.Length + data_offset;
             }
 
@@ -275,6 +301,7 @@ namespace Butthesda
             return ptr_data + 0x100;
         }
 
+
         private IntPtr Inject_SkyrimSE()
         {
 
@@ -288,6 +315,7 @@ namespace Butthesda
             IntPtr ptr_inject = (IntPtr)aob_scanner.FindPattern();
             if (ptr_inject == IntPtr.Zero)
             {
+                Notification_Message?.Invoke(this, new StringArg("Could not inject, did the game load past the main menu?"));
                 return IntPtr.Zero;
             }
 
@@ -297,6 +325,7 @@ namespace Butthesda
             byte b = memory.ReadByte(ptr_inject);
             if (b == 0xE9)
             {
+                Notification_Message?.Invoke(this, new StringArg("Skipping injection (already injected)"));
                 return (IntPtr)((long)memory.ReadInt32(ptr_inject + 0x1) + (long)ptr_inject) + 5 + bytes_program.Length + data_offset;
             }
 
@@ -333,6 +362,5 @@ namespace Butthesda
             return ptr_data + data_offset;
         }
     }
-
 
 }

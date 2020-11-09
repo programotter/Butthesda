@@ -12,6 +12,7 @@ using Buttplug.Core;
 using Buttplug.Client.Connectors.WebsocketConnector;
 using Microsoft.Win32;
 using System.IO;
+using System.Threading;
 
 namespace Butthesda
 {
@@ -44,8 +45,6 @@ namespace Butthesda
                     }
                 }
             }
-            
-            textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
 
         }
 
@@ -144,20 +143,20 @@ namespace Butthesda
 
         private void Button_default_path_Click(object sender, EventArgs e)
         {
-            Set_Default_GamePath();
+            Set_GamePath();
         }
 
-        private void Set_Default_GamePath()
+        private void Set_GamePath()
 		{
 			string keyName = "";
 
             if (Game_Name == Games.Skyrim.Executable_Name)
 			{
-                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim Special Edition";
+                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim";
                 
             }else if (Game_Name == Games.SkyrimSe.Executable_Name)
 			{
-                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim";
+                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim Special Edition";
             }
             else if (Game_Name == Games.Fallout4.Executable_Name)
             {
@@ -169,29 +168,121 @@ namespace Butthesda
 			textField_game_path.Text = path;
         }
 
+        private void Save_GamePath()
+		{
+            //save path
+            if (Game_Name == Games.Skyrim.Executable_Name)
+            {
+                Properties.Settings.Default.GamePath_Skyrim = textField_game_path.Text;
+            }
+            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            {
+                Properties.Settings.Default.GamePath_SkyrimSe = textField_game_path.Text;
+            }
+            else if (Game_Name == Games.Fallout4.Executable_Name)
+            {
+                Properties.Settings.Default.GamePath_Fallout4 = textField_game_path.Text;
+            }
+            Properties.Settings.Default.Save();
+        }
+
+        private void Load_GamePath()
+		{
+            //load saved game_path
+            if (Game_Name == Games.Skyrim.Executable_Name)
+            {
+                textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
+            }
+            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            {
+                textField_game_path.Text = Properties.Settings.Default.GamePath_SkyrimSe;
+            }
+            else if (Game_Name == Games.Fallout4.Executable_Name)
+            {
+                textField_game_path.Text = Properties.Settings.Default.GamePath_Fallout4;
+            }
+
+        }
+
+        private bool waiting_for_game_start = false;
         private void Button_start_Click(object sender, EventArgs e)
         {
+			if (waiting_for_game_start)
+			{
+                button_start.Text = "Start";
+                waiting_for_game_start = false;
+
+				if (Games.Running(Game_Name))
+				{
+                    bool requestRestart = true;
+					while (requestRestart)
+					{
+                        var f = new Form_EventFileReader(Game_Name, textField_game_path.Text);
+                        f.ShowDialog();
+                        requestRestart = f.RequestRestart;
+                    }
+
+                }
+                return;
+			}
+
             if (String.IsNullOrEmpty(Game_Name))
             {
-                MessageBox.Show("Select what game you want to play first", "Select a game!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Select what game you want to play first", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            if (!Games.Running(Game_Name))
+
+            if (!Directory.Exists(textField_game_path.Text))
             {
-                MessageBox.Show("Start the game first", "Game not found!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Selected folder doesn't exist", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            string Link_File_Path = @"\buttplugio\link.txt";
+            if (!Directory.Exists(textField_game_path.Text + @"\FunScripts"))
+            {
+                MessageBox.Show("Selected folder is not the mod folder", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-            var f = new Form_EventFileReader(Game_Name, Link_File_Path);
-            f.ShowDialog();
+            if (!File.Exists(textField_game_path.Text + @"\FunScripts\link.txt"))
+            {
+                MessageBox.Show("link file doesnt exist", "warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+
+            waiting_for_game_start = true;
+            button_start.Text = "Cancel \"waiting for game to start\"";
+
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                /* run your code here */
+                while (!Games.Running(Game_Name) && waiting_for_game_start)
+                {
+                    Thread.Sleep(100);
+                }
+
+				if (waiting_for_game_start)
+				{
+                    this.Invoke((MethodInvoker)delegate { Button_start_Click(sender, e); });
+                }
+
+            }).Start();
+
+			if (!Games.Running(Game_Name))
+			{
+                File.WriteAllText(textField_game_path.Text + @"\FunScripts\link.txt", string.Empty);
+            }
+
         }
 
         public static string game_path = "";
         private void Game_path_TextChanged(object sender, EventArgs e)
         {
+            
+            Save_GamePath();
 
         }
 
@@ -226,21 +317,8 @@ namespace Butthesda
 
             if (radioButton.Checked)
             {
-                //save path
-                if (Game_Name == Games.Skyrim.Executable_Name)
-                {
-                    Properties.Settings.Default.GamePath_Skyrim = textField_game_path.Text;
-                }
-                else if (Game_Name == Games.SkyrimSe.Executable_Name)
-                {
-                    Properties.Settings.Default.GamePath_SkyrimSe = textField_game_path.Text;
-                }
-                else if (Game_Name == Games.Fallout4.Executable_Name)
-                {
-                    Properties.Settings.Default.GamePath_Fallout4 = textField_game_path.Text;
-                }
-                Properties.Settings.Default.Save();
 
+                
 
                 //update game_name
                 if (button_skyrim == radioButton)
@@ -255,27 +333,10 @@ namespace Butthesda
                     Game_Name = Games.Fallout4.Executable_Name;
                 }
 
-
-                //load saved game_path
-                if (Game_Name == Games.Skyrim.Executable_Name)
-                {
-                    textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
-                }
-                else if (Game_Name == Games.SkyrimSe.Executable_Name)
-                {
-                    textField_game_path.Text = Properties.Settings.Default.GamePath_SkyrimSe;
-                }
-                else if (Game_Name == Games.Fallout4.Executable_Name)
-                {
-                    textField_game_path.Text = Properties.Settings.Default.GamePath_Fallout4;
-                }
-                Properties.Settings.Default.Save();
-
-
+                Load_GamePath();
 
             }
         }
-
 
 
 	}

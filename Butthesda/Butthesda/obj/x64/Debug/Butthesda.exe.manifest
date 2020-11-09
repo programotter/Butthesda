@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <asmv1:assemblyIdentity name="Butthesda.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="amd64" type="win32" />
+  <asmv1:assemblyIdentity name="Butthesda.exe" version="1.0.0.7" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="amd64" type="win32" />
   <application />
   <entryPoint>
     <assemblyIdentity name="Butthesda" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
@@ -42,14 +42,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Butthesda.exe" size="126984">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Butthesda.exe" size="142856">
       <assemblyIdentity name="Butthesda" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>oD95VEzKwgI8LQCy9wxb/S/ikl3iNF7/KIsBJYEYabk=</dsig:DigestValue>
+        <dsig:DigestValue>hxeYj241Y16QH7hvAFa3f359UrFFjnIIZgkMpFzovqg=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -209,13 +209,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="Butthesda.exe.config" size="1688">
+  <file name="Butthesda.exe.config" size="2117">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>W72KV8A3OwFaRuQUALIT1wHbq+Lj0Rp+n0F2piDbwYo=</dsig:DigestValue>
+      <dsig:DigestValue>vgPY9wR4nsB0ZxrGaAbBfBZYmPU8okb6snWgCd6RM6M=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

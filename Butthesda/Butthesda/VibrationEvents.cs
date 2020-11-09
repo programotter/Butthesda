@@ -17,12 +17,16 @@ namespace Butthesda
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
 
-
-        public VibrationEvents()
+        string Game_Path;
+        public VibrationEvents(string Game_Path)
         {
-            //todo re-enable this!
-            //Init_SexLabAnimations();
-            //Init_Events();
+            this.Game_Path = Game_Path;
+        }
+
+        public void Init()
+		{
+            Init_SexLabAnimations();
+            Init_Events();
         }
 
 
@@ -33,10 +37,15 @@ namespace Butthesda
 
         private void Init_Events()
         {
-            string other_dir = @"C:\Users\jpriv\Desktop\FunScript skyrim\Other";
+            string other_dir = Game_Path + @"\FunScripts";
             string[] mod_dirs = Directory.GetDirectories(other_dir);
             foreach (string mod_dir in mod_dirs)
             {
+				if (Path.GetFileName(mod_dir).ToLower() == "sexlab")
+				{
+                    continue;
+				}
+
                 string[] event_dirs = Directory.GetDirectories(mod_dir);
                 foreach (string event_dir in event_dirs)
                 {
@@ -96,7 +105,7 @@ namespace Butthesda
         private Actor_Data SexLab_Orgasm_Event = new Actor_Data();
         private void Init_SexLabAnimations()
         {
-            string sexlab_dir = @"C:\Users\jpriv\Desktop\FunScript skyrim\SexLab";
+            string sexlab_dir = Game_Path + @"\FunScripts\SexLab";
             string[] mod_dirs = Directory.GetDirectories(sexlab_dir);
 
             foreach (string mod_dir in mod_dirs)
