@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Buttplug.Client;
-using Buttplug.Core.Logging;
 using Buttplug.Core.Messages;
-using ScriptPlayer.Shared;
-using ScriptPlayer.Shared.Scripts;
 
 namespace Butthesda
 {
-    public delegate void Notify();
+	public delegate void Notify();
 
     public class Device
     {
@@ -25,15 +19,9 @@ namespace Butthesda
         public ButtplugClient client;
         public bool active;
 
-        private byte maxPosition = 95;
-        private byte minPosition = 5;
-        private byte minSpeed = 20;
-        private byte maxSpeed = 95;
-        private double speedMultiplier = 1;
-        private bool autoHomingEnabled = false;
-        private bool invertPosition = false;
+        private TimeSpan IntermediateUpdateInterval = new TimeSpan(0,0,0,0,100);
 
-        private Thread thread;
+        private readonly Thread thread;
 
         public enum BodyPart
         {
@@ -119,10 +107,14 @@ namespace Butthesda
             }
         }
 
-
+        DateTime prevUpdate = new DateTime(0);
         DateTime nextUpdate = new DateTime(0);
+        DateTime nextIntermediateUpdate = new DateTime(0);
         private async void UpdateLoop()
         {
+            uint old_position = 0;
+            uint new_position = 0;
+
             while (true)
             {
                 Thread.Sleep(10);
@@ -141,7 +133,7 @@ namespace Butthesda
                 if (timeNow >= nextUpdate)
                 {
 
-                    List<int> positions = new List<int>();
+                    List<uint> positions = new List<uint>();
 
                     lock (running_events)
                     {
@@ -166,6 +158,7 @@ namespace Butthesda
                         {
                             if (nextUpdate < running_event.nextTime)
                             {
+                                prevUpdate = nextUpdate;
                                 nextUpdate = running_event.nextTime;
                             }
                         }
@@ -186,17 +179,29 @@ namespace Butthesda
 
 
                     //avarage the positions to get final position
-                    int position = 0;
-                    foreach (int p in positions)
+                    uint position = 0;
+                    foreach (uint p in positions)
                     {
                         position += p;
                     }
-                    position /= positions.Count;
+                    position /= (uint)positions.Count;
 
                     //calculate duration to next point
-                    int duration = (int)(nextUpdate - timeNow).TotalMilliseconds;
+                    uint duration = (uint)(nextUpdate - timeNow).TotalMilliseconds;
+                    old_position = new_position;
+                    new_position = position;
+                    await Set(new_position, duration);
 
-                    await Set(position, duration);
+                    //we need to set it here so it gets scipt the first time
+                    nextIntermediateUpdate = timeNow + IntermediateUpdateInterval;
+                }
+                else if (timeNow > nextIntermediateUpdate)
+                {
+                    nextIntermediateUpdate = timeNow + IntermediateUpdateInterval;
+
+                    double position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
+                    position = Math.Max(Math.Min(position, 1), 0);
+                    await Set(position);
                 }
             }
         }
@@ -205,43 +210,52 @@ namespace Butthesda
         private void ForceUpdate()
         {
             //set time to zero so the update loop is force to do a update
+            prevUpdate = new DateTime(0);
             nextUpdate = new DateTime(0);
         }
 
 
-        private int currentPos = 0;
-        public async Task Set(int newpos, int duration)
+        private double currentPos = 0;
+        public async Task Set(double position, uint duration)
         {
             if (client == null) return;
 
             try
             {
                 await _clientLock.WaitAsync();
-                ButtplugDeviceMessage message = null;
 
-                int deltaPos = Math.Abs(newpos - currentPos);
+                double deltaPos = Math.Abs(position - currentPos);
                 if (deltaPos != 0) {
-                    currentPos = newpos;
+                    currentPos = position;
 
-                    if (device.AllowedMessages.ContainsKey(typeof(FleshlightLaunchFW12Cmd)))
+                    if (device.AllowedMessages.ContainsKey(typeof(LinearCmd)))
                     {
-                        Console.WriteLine((float)deltaPos / (float)duration + " " + newpos + " ");
-                        uint speed = (uint)Math.Floor(25000 * Math.Pow((duration * 90) / deltaPos, -1.05));
-                        speed = Math.Max(Math.Min(speed,90),5);
-                        Console.WriteLine("Device.Set \"" +this.name+"\" speed: "+ speed + " position: "+ newpos);
-                        message = new FleshlightLaunchFW12Cmd(device.Index, Math.Max(Math.Min(speed, 99), 1), (uint)Math.Max(Math.Min(newpos,99),0) );
-                    }
-
-
-
-                    if (message != null)
-                    {
-                        await device.SendMessageAsync(message);
+                        await device.SendLinearCmd(duration, position);
                     }
 
                     //ButtplugMessage response = await _client.SendDeviceMessage(device, message);
                     //await CheckResponse(response);
                 }
+            }
+            finally
+            {
+                _clientLock.Release();
+            }
+        }
+
+
+        public async Task Set(double position)
+        {
+            if (client == null) return;
+            try
+            {
+                await _clientLock.WaitAsync();
+
+                if (device.AllowedMessages.ContainsKey(typeof(VibrateCmd)))
+                {
+                    await device.SendVibrateCmd(position);
+                }
+
             }
             finally
             {
@@ -260,7 +274,7 @@ namespace Butthesda
             return this.type[(int)bodyPart, (int)eventType];
         }
 
-        private bool[,] type = new bool[Enum.GetNames(typeof(BodyPart)).Length, Enum.GetNames(typeof(EventType)).Length];
+        private readonly bool[,] type = new bool[Enum.GetNames(typeof(BodyPart)).Length, Enum.GetNames(typeof(EventType)).Length];
 
         public override string ToString()
         {
@@ -275,16 +289,15 @@ namespace Butthesda
         List<FunScriptAction> actions;
         DateTime timeStarted;
 
-        int nextPosition;
+        uint nextPosition;
         public DateTime nextTime;
 
-        int prevPosition;
+        uint prevPosition;
         DateTime prevTime;
 
         int current_step ;
         public bool ended;
-
-        bool synced_by_animation;
+		readonly bool synced_by_animation;
 
         public void End()
         {
@@ -348,7 +361,7 @@ namespace Butthesda
             }
         }
 
-        public int GetPosition(DateTime date)
+        public uint GetPosition(DateTime date)
         {
 
             if (ended)
@@ -356,17 +369,17 @@ namespace Butthesda
                 return 0;
             }
 
-            if(date > nextTime)
+            if(date >= nextTime)
             {
                 return nextPosition;
-            }else if (date < prevTime)
+            }else if (date <= prevTime)
             {
                 return prevPosition;
             }
             else
             {
                 //map position between old and new position based on current time
-                int position = (int)((float)(date - prevTime).TotalMilliseconds / (float)(nextTime - prevTime).TotalMilliseconds * (nextPosition - prevPosition)) + prevPosition;
+                uint position = (uint)((float)(date - prevTime).TotalMilliseconds / (float)(nextTime - prevTime).TotalMilliseconds * (nextPosition - prevPosition)) + prevPosition;
                 return Math.Max(Math.Min(position, 99), 0);
             }
 

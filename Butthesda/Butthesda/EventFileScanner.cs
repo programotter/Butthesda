@@ -5,14 +5,13 @@ using System.IO;
 using System.Media;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 using static Butthesda.Program;
 
 namespace Butthesda
 {
 
 
-    class EventFileScanner
+	class EventFileScanner
     {
 
         public event EventHandler Notification_Message;
@@ -76,7 +75,7 @@ namespace Butthesda
         }
 
 
-        private Running_Event dd_horny_event = new Running_Event();
+
         private List<Custom_Running_Event> Custom_Running_Events = new List<Custom_Running_Event>();
 
         public void Run()

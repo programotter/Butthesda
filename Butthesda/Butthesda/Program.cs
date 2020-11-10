@@ -1,22 +1,9 @@
-﻿
-using ScriptPlayer.Shared;
-using ScriptPlayer.Shared.Scripts;
-using System;
-using System.Linq;
+﻿using System;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Microsoft.Win32;
-using System.Diagnostics;
-using WindowsInput;
-using WindowsInput.Native;
-using AOB_Scanner;
 
 namespace Butthesda
 {
-    static class Program
+	static class Program
     {
 
 

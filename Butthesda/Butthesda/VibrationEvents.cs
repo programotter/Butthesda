@@ -1,8 +1,8 @@
-﻿using ScriptPlayer.Shared.Scripts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static Butthesda.FunScriptLoader;
 using static Butthesda.Program;
 
 namespace Butthesda
@@ -364,8 +364,7 @@ namespace Butthesda
         {
             this.eventType = eventType;
 
-            FunScriptLoader loader = new FunScriptLoader();
-            actions = loader.Load(eventType_dir).Cast<FunScriptAction>().ToList(); ;
+            actions = FunScriptLoader.Load(eventType_dir).ToList();
 
         }
     }

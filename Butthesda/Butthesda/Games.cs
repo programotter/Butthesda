@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace Butthesda
 {
-    public sealed class Games
+	public sealed class Games
     {
         public static readonly Games Skyrim = new Games("TESV");
         public static readonly Games SkyrimSe = new Games("SkyrimSe");

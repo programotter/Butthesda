@@ -139,6 +139,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FunScript.cs" />
     <Compile Include="Custom_CheckBox.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="EventFileScanner.cs" />
@@ -172,40 +173,6 @@
     <Compile Include="Form_ScanDevices.Designer.cs">
       <DependentUpon>Form_ScanDevices.cs</DependentUpon>
     </Compile>
-    <Compile Include="FunScript\Beats\BeatCollection.cs" />
-    <Compile Include="FunScript\Beats\BeatGroup.cs" />
-    <Compile Include="FunScript\Beats\BeatPattern.cs" />
-    <Compile Include="FunScript\Beats\SpeedPredictor.cs" />
-    <Compile Include="FunScript\Beats\TimeSpanExtensions.cs" />
-    <Compile Include="FunScript\Classes\BlockingQueue.cs" />
-    <Compile Include="FunScript\CommandSource.cs" />
-    <Compile Include="FunScript\Controls\PositionCollection.cs" />
-    <Compile Include="FunScript\Controls\QueueEntry.cs" />
-    <Compile Include="FunScript\Controls\TimedPosition.cs" />
-    <Compile Include="FunScript\Converters\StringToVersionConverter.cs" />
-    <Compile Include="FunScript\Devices\ButtplugAdapter.cs" />
-    <Compile Include="FunScript\Devices\ButtplugDevice.cs" />
-    <Compile Include="FunScript\Devices\CommandConverter.cs" />
-    <Compile Include="FunScript\Devices\Device.cs" />
-    <Compile Include="FunScript\Devices\DeviceCommandInformation.cs" />
-    <Compile Include="FunScript\Devices\DeviceController.cs" />
-    <Compile Include="FunScript\Devices\Interfaces\IActionBasedDevice.cs" />
-    <Compile Include="FunScript\Devices\Interfaces\IDevice.cs" />
-    <Compile Include="FunScript\Helpers\ExceptionHelper.cs" />
-    <Compile Include="FunScript\Scripts\BeatScriptAction.cs" />
-    <Compile Include="FunScript\Scripts\BeatsToFunScriptConverter.cs" />
-    <Compile Include="FunScript\Scripts\FunScriptAction.cs" />
-    <Compile Include="FunScript\Scripts\FunScriptFile.cs" />
-    <Compile Include="FunScript\Scripts\FunScriptLoader.cs" />
-    <Compile Include="FunScript\Scripts\IntermediateScriptActionEventArgs.cs" />
-    <Compile Include="FunScript\Scripts\RepeatablePattern.cs" />
-    <Compile Include="FunScript\Scripts\ScriptAction.cs" />
-    <Compile Include="FunScript\Scripts\ScriptActionEventArgs.cs" />
-    <Compile Include="FunScript\Scripts\ScriptFileFormat.cs" />
-    <Compile Include="FunScript\Scripts\ScriptHandler.cs" />
-    <Compile Include="FunScript\Scripts\ScriptLoader.cs" />
-    <Compile Include="FunScript\TimeSource\TimeSource.cs" />
-    <Compile Include="FunScript\ViewModels\PositionFilterMode.cs" />
     <Compile Include="Games.cs" />
     <Compile Include="Memory\AOB_Scanner.cs" />
     <Compile Include="Memory\Memory.cs" />
