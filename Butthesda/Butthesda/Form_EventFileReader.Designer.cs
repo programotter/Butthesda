@@ -55,6 +55,7 @@
 			this.checkBox_ShowNotifications = new System.Windows.Forms.CheckBox();
 			this.checkBox_ShowWarnings = new System.Windows.Forms.CheckBox();
 			this.checkBox_ShowErrors = new System.Windows.Forms.CheckBox();
+			this.button1 = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// event_viewer
@@ -289,11 +290,22 @@
 			this.checkBox_ShowErrors.UseVisualStyleBackColor = true;
 			this.checkBox_ShowErrors.CheckedChanged += new System.EventHandler(this.CheckBox_ShowErrors_CheckedChanged);
 			// 
+			// button1
+			// 
+			this.button1.Location = new System.Drawing.Point(498, 412);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(117, 23);
+			this.button1.TabIndex = 27;
+			this.button1.Text = "Re-init FunScripts";
+			this.button1.UseVisualStyleBackColor = true;
+			this.button1.Click += new System.EventHandler(this.button1_Click);
+			// 
 			// Form_EventFileReader
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.Controls.Add(this.button1);
 			this.Controls.Add(this.checkBox_ShowErrors);
 			this.Controls.Add(this.checkBox_ShowWarnings);
 			this.Controls.Add(this.checkBox_ShowNotifications);
@@ -355,5 +367,6 @@
 		private System.Windows.Forms.CheckBox checkBox_ShowNotifications;
 		private System.Windows.Forms.CheckBox checkBox_ShowWarnings;
 		private System.Windows.Forms.CheckBox checkBox_ShowErrors;
+		private System.Windows.Forms.Button button1;
 	}
 }

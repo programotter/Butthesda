@@ -54,12 +54,22 @@ namespace Butthesda
         private void MemoryScanner_AnimationEvent(object sender, EventArgs e)
         {
             StringArg e2 = (StringArg)e;
-            switch (e2.String.ToLower())
+            switch (e2.String)
             {
-                case "footright":
-                case "footleft":
-                case "jumpup":
-                case "jumpdown":
+                case "FootRight":
+                case "FootLeft":
+                case "JumpUp":
+                case "JumpLandEnd":
+                case "IdleChairSitting":
+                case "idleChairGetUp":
+                    for (int i = 0; i < dd_devices.Length; i++)
+                    {
+                        DD_Device_Type type = dd_devices[i];
+                        if (type == DD_Device_Type.none) continue;
+                        string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
+                        vibrationEvents.Play_Event("dd device footstep " + location);
+                    };
+
                     PlaySound();
                     break;
             }

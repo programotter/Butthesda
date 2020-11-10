@@ -31,14 +31,21 @@ namespace Butthesda
             checkBox_ShowNotifications.Checked = Properties.Settings.Default.Show_notifications;
             checkBox_ShowDebug.Checked = Properties.Settings.Default.Show_debug_info;
 
-
             vibrationEvents = new VibrationEvents(Game_Path);
+            memory_scanner = new Memory_Scanner(Game_Name);
+            eventFileScanner = new EventFileScanner(Game_Path, memory_scanner, vibrationEvents);
+        }
+
+        public void Init()
+		{
+
+
             vibrationEvents.Notification_Message += Notivication_Message;
             vibrationEvents.Warning_Message += Warning_Message;
             vibrationEvents.Error_Message += Error_Message;
             vibrationEvents.Debug_Message += Debug_Message;
 
-            memory_scanner = new Memory_Scanner(Game_Name);
+
             memory_scanner.Notification_Message += Notivication_Message;
             memory_scanner.Warning_Message += Warning_Message;
             memory_scanner.Error_Message += Error_Message;
@@ -51,7 +58,7 @@ namespace Butthesda
             memory_scanner.GameOpened += Memory_Scanner_GameOpened;
             memory_scanner.GameClosed += Memory_Scanner_GameClosed;
 
-            eventFileScanner = new EventFileScanner(Game_Path, memory_scanner, vibrationEvents);
+
             eventFileScanner.Notification_Message += Notivication_Message;
             eventFileScanner.Error_Message += Error_Message;
             eventFileScanner.Debug_Message += Debug_Message;
@@ -68,7 +75,7 @@ namespace Butthesda
                 d.EventAdded += Event_Device_Added;
                 d.EventRemoved += Event_Device_removed;
                 d.EventsCleared += Event_Device_Cleared;
-
+                d.SetMemoryEvents(memory_scanner);
             }
 
 
@@ -87,15 +94,15 @@ namespace Butthesda
                 vibrationEvents.Init();
                 bool success = memory_scanner.Init();
 
-                Thread.Sleep(2000);//we dont want to restart to fast after eachother
+                Thread.Sleep(5000);//we dont want to restart to fast after eachother
                 if (!success)
                 {
+                    Warning_Message(this, new StringArg("Program will to inject in 5s"));
                     Request_Restart();
                 }
 
-                
-            }).Start();
 
+            }).Start();
         }
 
         private void Request_Restart()
@@ -217,18 +224,18 @@ namespace Butthesda
         private void Event_Device_removed()
         {
             running_events--;
-            Update_Running_Events();
+            //Update_Running_Events();
         }
 
         private void Event_Device_Added()
         {
             running_events++;
-            Update_Running_Events();
+            //Update_Running_Events();
         }
         private void Event_Device_Cleared()
         {
             running_events = 0;
-            Update_Running_Events();
+            //Update_Running_Events();
         }
 
         private void Update_Running_Events()
@@ -375,5 +382,9 @@ namespace Butthesda
             Properties.Settings.Default.Save();
         }
 
+		private void button1_Click(object sender, EventArgs e)
+		{
+            vibrationEvents.Init();
+		}
 	}
 }

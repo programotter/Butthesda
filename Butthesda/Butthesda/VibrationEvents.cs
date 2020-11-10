@@ -70,49 +70,6 @@ namespace Butthesda
         }
 
 
-        public Running_Event Play_Event(string name)
-        {
-            name = name.ToLower();
-            foreach (Actor_Data event_data in events)
-            {
-                if (event_data.name == name)
-                {
-                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
-                    return PlayEvent(event_data);
-                }
-            }
-            Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
-            return new Running_Event();
-        }
-
-        private Running_Event PlayEvent(Actor_Data event_data,bool synced_by_animation)
-        {
-            Running_Event running_Event = new Running_Event();
-            foreach (BodyPart_Data bodypart in event_data.bodyparts)
-            {
-                if (bodypart == null) { continue; };
-                Device.BodyPart bodyPart_id = bodypart.bodyPart;
-
-                foreach (EventType_Data eventType in bodypart.eventTypes)
-                {
-                    if (eventType == null) { continue; };
-                    Device.EventType eventType_id = eventType.eventType;
-
-                    foreach (Device device in Device.devices)
-                    {
-                        if (device.HasType(bodyPart_id, eventType_id))
-                        {
-                            running_Event = device.AddEvent(event_data.name, eventType.actions, synced_by_animation);
-                        }
-                    }
-                }
-
-            }
-            return running_Event;
-        }
-        private Running_Event PlayEvent(Actor_Data event_data) {
-            return PlayEvent(event_data, false);
-        }
 
 
         private List<Animation_Data> SexLab_Animations = new List<Animation_Data>();
@@ -166,6 +123,50 @@ namespace Butthesda
 
 
 
+        public Running_Event Play_Event(string name)
+        {
+            name = name.ToLower();
+            foreach (Actor_Data event_data in events)
+            {
+                if (event_data.name == name)
+                {
+                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
+                    return PlayEvent(event_data);
+                }
+            }
+            Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
+            return new Running_Event();
+        }
+
+        private Running_Event PlayEvent(Actor_Data event_data, bool synced_by_animation)
+        {
+            Running_Event running_Event = new Running_Event();
+            foreach (BodyPart_Data bodypart in event_data.bodyparts)
+            {
+                if (bodypart == null) { continue; };
+                Device.BodyPart bodyPart_id = bodypart.bodyPart;
+
+                foreach (EventType_Data eventType in bodypart.eventTypes)
+                {
+                    if (eventType == null) { continue; };
+                    Device.EventType eventType_id = eventType.eventType;
+
+                    foreach (Device device in Device.devices)
+                    {
+                        if (device.HasType(bodyPart_id, eventType_id))
+                        {
+                            running_Event = device.AddEvent(event_data.name, eventType.actions, synced_by_animation);
+                        }
+                    }
+                }
+
+            }
+            return running_Event;
+        }
+        private Running_Event PlayEvent(Actor_Data event_data)
+        {
+            return PlayEvent(event_data, false);
+        }
 
 
         private Animation_Data Sexlab_Playing_Animation = new Animation_Data();

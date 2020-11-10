@@ -218,6 +218,7 @@ namespace Butthesda
 					while (requestRestart)
 					{
                         var f = new Form_EventFileReader(Game_Name, textField_game_path.Text);
+                        f.Init();
                         f.ShowDialog();
                         requestRestart = f.RequestRestart;
                     }

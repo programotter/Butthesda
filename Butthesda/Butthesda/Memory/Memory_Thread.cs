@@ -13,7 +13,7 @@ namespace Butthesda
 {
 
 
-    class Memory_Scanner
+    public class Memory_Scanner
     {
         public event EventHandler Notification_Message;
         public event EventHandler Error_Message;
@@ -61,6 +61,7 @@ namespace Butthesda
 
             if (ptr_data == IntPtr.Zero)
             {
+                Warning_Message?.Invoke(this, new StringArg("No pointer was found!"));
                 return false;//return failure
             }
 
@@ -149,8 +150,6 @@ namespace Butthesda
                     
                     string name = memory.ReadString(name_address, 30);
                     int amount = memory.ReadInt32(ptr + 0x8);
-
-                    //Message?.Invoke(this, new StringArg(String.Format("event loop, address: 0x{0:X}, nameAdress {1:X}, name: {2}, amount: {3}", temp_debugging.ToInt64(), name_address.ToInt64(), name, amount)));
 
                     bool found = false;
                     foreach (AnimationItem a in AnimationList)

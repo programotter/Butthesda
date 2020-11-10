@@ -227,11 +227,11 @@ namespace Butthesda
         {
             if (is64Bit)
             {
-                return (IntPtr)ReadInt64(_lpBaseAddress);
+                return (IntPtr)ReadUInt64(_lpBaseAddress);
             }
             else
             {
-                return (IntPtr)ReadInt32(_lpBaseAddress);
+                return (IntPtr)ReadUInt32(_lpBaseAddress);
             }
         }
 
@@ -270,6 +270,23 @@ namespace Butthesda
             return ReadInt32(ReadPointer(_lpBaseAddress, offsets));
         }
 
+        // Read Int32
+        public UInt32 ReadUInt32(IntPtr _lpBaseAddress)
+        {
+            byte[] Buffer = ReadBytes(_lpBaseAddress, 4);
+            return BitConverter.ToUInt32(Buffer, 0);
+        }
+
+        public UInt32 ReadUInt32(int[] offsets)
+        {
+            return ReadUInt32(BaseModule, offsets);
+        }
+
+        public UInt32 ReadUInt32(IntPtr _lpBaseAddress, int[] offsets)
+        {
+            return ReadUInt32(ReadPointer(_lpBaseAddress, offsets));
+        }
+
 
         // Read Int64
         public Int64 ReadInt64(IntPtr _lpBaseAddress)
@@ -287,6 +304,25 @@ namespace Butthesda
         {
             return ReadInt64(BaseModule,offsets);
         }
+
+
+        // Read UInt64
+        public UInt64 ReadUInt64(IntPtr _lpBaseAddress)
+        {
+            byte[] Buffer = ReadBytes(_lpBaseAddress, 8);
+            return BitConverter.ToUInt64(Buffer, 0);
+        }
+
+        public UInt64 ReadUInt64(IntPtr _lpBaseAddress, int[] offsets)
+        {
+            return ReadUInt64(ReadPointer(_lpBaseAddress, offsets));
+        }
+
+        public UInt64 ReadUInt64(int[] offsets)
+        {
+            return ReadUInt64(BaseModule, offsets);
+        }
+
 
 
         // Read float

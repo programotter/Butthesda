@@ -35,16 +35,6 @@ namespace Butthesda
             get => TimeStamp.Ticks / TimeSpan.TicksPerMillisecond;
             set => TimeStamp = TimeSpan.FromTicks(value * TimeSpan.TicksPerMillisecond);
         }
-
-        public FunScriptAction Duplicate()
-        {
-            return new FunScriptAction
-            {
-                Position = Position,
-                TimeStamp = TimeStamp,
-                OriginalAction = OriginalAction
-            };
-        }
     }
 
 
