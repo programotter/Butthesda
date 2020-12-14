@@ -46,8 +46,7 @@
 			this.label_game_state = new System.Windows.Forms.Label();
 			this.label8 = new System.Windows.Forms.Label();
 			this.text_detected_mods = new System.Windows.Forms.RichTextBox();
-			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.CheckBox_Debugger = new System.Windows.Forms.CheckBox();
 			this.label_running_events = new System.Windows.Forms.Label();
 			this.label_animation_time = new System.Windows.Forms.Label();
 			this.label10 = new System.Windows.Forms.Label();
@@ -56,6 +55,7 @@
 			this.checkBox_ShowWarnings = new System.Windows.Forms.CheckBox();
 			this.checkBox_ShowErrors = new System.Windows.Forms.CheckBox();
 			this.button1 = new System.Windows.Forms.Button();
+			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.SuspendLayout();
 			// 
 			// event_viewer
@@ -73,13 +73,13 @@
 			this.label1.AutoSize = true;
 			this.label1.Location = new System.Drawing.Point(607, 164);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(91, 13);
+			this.label1.Size = new System.Drawing.Size(114, 13);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "Devious Devices:";
+			this.label1.Text = "Devious Devices plug:";
 			// 
 			// progressBar_arousal
 			// 
-			this.progressBar_arousal.Location = new System.Drawing.Point(70, 412);
+			this.progressBar_arousal.Location = new System.Drawing.Point(55, 412);
 			this.progressBar_arousal.Name = "progressBar_arousal";
 			this.progressBar_arousal.Size = new System.Drawing.Size(100, 13);
 			this.progressBar_arousal.Step = 1;
@@ -201,32 +201,27 @@
 			this.text_detected_mods.Name = "text_detected_mods";
 			this.text_detected_mods.Size = new System.Drawing.Size(163, 126);
 			this.text_detected_mods.TabIndex = 16;
-			this.text_detected_mods.Text = "test";
+			this.text_detected_mods.Text = "Searching...";
 			// 
-			// checkBox1
+			// CheckBox_Debugger
 			// 
-			this.checkBox1.AutoSize = true;
-			this.checkBox1.Location = new System.Drawing.Point(381, 412);
-			this.checkBox1.Name = "checkBox1";
-			this.checkBox1.Size = new System.Drawing.Size(80, 17);
-			this.checkBox1.TabIndex = 18;
-			this.checkBox1.Text = "checkBox1";
-			this.checkBox1.UseVisualStyleBackColor = true;
-			this.checkBox1.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged);
-			// 
-			// contextMenuStrip1
-			// 
-			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
+			this.CheckBox_Debugger.AutoSize = true;
+			this.CheckBox_Debugger.Location = new System.Drawing.Point(515, 412);
+			this.CheckBox_Debugger.Name = "CheckBox_Debugger";
+			this.CheckBox_Debugger.Size = new System.Drawing.Size(73, 17);
+			this.CheckBox_Debugger.TabIndex = 18;
+			this.CheckBox_Debugger.Text = "Debugger";
+			this.CheckBox_Debugger.UseVisualStyleBackColor = true;
+			this.CheckBox_Debugger.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged);
 			// 
 			// label_running_events
 			// 
 			this.label_running_events.AutoSize = true;
 			this.label_running_events.Location = new System.Drawing.Point(211, 412);
 			this.label_running_events.Name = "label_running_events";
-			this.label_running_events.Size = new System.Drawing.Size(42, 13);
+			this.label_running_events.Size = new System.Drawing.Size(142, 13);
 			this.label_running_events.TabIndex = 20;
-			this.label_running_events.Text = "Vaginal";
+			this.label_running_events.Text = "Running events: working yet";
 			// 
 			// label_animation_time
 			// 
@@ -292,13 +287,18 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(498, 412);
+			this.button1.Location = new System.Drawing.Point(610, 120);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(117, 23);
 			this.button1.TabIndex = 27;
 			this.button1.Text = "Re-init FunScripts";
 			this.button1.UseVisualStyleBackColor = true;
 			this.button1.Click += new System.EventHandler(this.button1_Click);
+			// 
+			// contextMenuStrip1
+			// 
+			this.contextMenuStrip1.Name = "contextMenuStrip1";
+			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
 			// 
 			// Form_EventFileReader
 			// 
@@ -313,7 +313,7 @@
 			this.Controls.Add(this.label_animation_time);
 			this.Controls.Add(this.label10);
 			this.Controls.Add(this.label_running_events);
-			this.Controls.Add(this.checkBox1);
+			this.Controls.Add(this.CheckBox_Debugger);
 			this.Controls.Add(this.text_detected_mods);
 			this.Controls.Add(this.label8);
 			this.Controls.Add(this.label_game_state);
@@ -358,8 +358,7 @@
         private System.Windows.Forms.Label label_game_state;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.RichTextBox text_detected_mods;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.CheckBox CheckBox_Debugger;
         private System.Windows.Forms.Label label_running_events;
         private System.Windows.Forms.Label label_animation_time;
         private System.Windows.Forms.Label label10;
@@ -368,5 +367,6 @@
 		private System.Windows.Forms.CheckBox checkBox_ShowWarnings;
 		private System.Windows.Forms.CheckBox checkBox_ShowErrors;
 		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
 	}
 }

@@ -1,26 +1,20 @@
-﻿using AOB_Scanner;
-using JetBrains.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
 
 
-    public class Memory_Scanner
+	public class Memory_Scanner
     {
         public event EventHandler Notification_Message;
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
         public event EventHandler Warning_Message;
         
-        public event EventHandler AnimationEvent;
+        public event EventHandler<StringArg> AnimationEvent;
         public event EventHandler AnimationTimeResetted;
         public event EventHandler AnimationTimeUpdated;
 
@@ -96,10 +90,11 @@ namespace Butthesda
 
         void Check_Game_Running()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Game_Running";
             bool was_running = true;
             while (true)
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
                 Process[] pname = Process.GetProcessesByName(Game_Name);
                 if ((pname.Length != 0) != (was_running))
                 {
@@ -134,6 +129,7 @@ namespace Butthesda
 
         private void Check_Events()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Events";
             List<AnimationItem> AnimationList = new List<AnimationItem>();
             bool First_Check = true;
             while (true)
@@ -194,6 +190,7 @@ namespace Butthesda
 
         private void Check_Timer()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Timer";
             float old_timer = 0;
 
             DateTime old_time = DateTime.Now;

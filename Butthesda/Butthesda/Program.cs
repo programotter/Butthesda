@@ -3,11 +3,8 @@ using System.Windows.Forms;
 
 namespace Butthesda
 {
-	static class Program
+    static class Program
     {
-
-
-
 
         [STAThread]
         static void Main()
@@ -22,52 +19,50 @@ namespace Butthesda
 
         public static DateTime start_time;
 
-
-        public class StringArg : EventArgs
+    }
+    public class StringArg : EventArgs
+    {
+        public string String { get; private set; }
+        public StringArg(string message)
         {
-            public string String { get; private set; }
-            public StringArg(string message)
-            {
-                String = message;
-            }
+            String = message;
         }
+    }
 
-        public class StringArgs : EventArgs
+    public class StringArgs : EventArgs
+    {
+        public string[] StringArray { get; private set; }
+        public StringArgs(string[] message)
         {
-            public string[] StringArray { get; private set; }
-            public StringArgs(string[] message)
-            {
-                StringArray = message;
-            }
+            StringArray = message;
         }
+    }
 
-        public class BoolArg : EventArgs
+    public class BoolArg : EventArgs
+    {
+        public bool Bool { get; private set; }
+        public BoolArg(bool message)
         {
-            public bool Bool { get; private set; }
-            public BoolArg(bool message)
-            {
-                Bool = message;
-            }
+            Bool = message;
         }
+    }
 
-        public class IntArg : EventArgs
+    public class IntArg : EventArgs
+    {
+        public int Int { get; private set; }
+        public IntArg(int message)
         {
-            public int Int { get; private set; }
-            public IntArg(int message)
-            {
-                Int = message;
-            }
+            Int = message;
         }
+    }
 
-        public class FloatArg : EventArgs
+    public class FloatArg : EventArgs
+    {
+        public float Float { get; private set; }
+        public FloatArg(float message)
         {
-            public float Float { get; private set; }
-            public FloatArg(float message)
-            {
-                Float = message;
-            }
+            Float = message;
         }
-
     }
 
 }

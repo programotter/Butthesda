@@ -259,6 +259,7 @@ namespace Butthesda
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
+                Thread.CurrentThread.Name = "Wait for game to start";
                 /* run your code here */
                 while (!Games.Running(Game_Name) && waiting_for_game_start)
                 {
@@ -339,6 +340,14 @@ namespace Butthesda
             }
         }
 
+		private void label3_Click(object sender, EventArgs e)
+		{
 
+		}
+
+		private void label8_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 }

@@ -94,6 +94,10 @@ namespace Butthesda
             {
                 device.SetType(checkbox.bodyPart, checkbox.eventType, checkbox.checkBox.Checked);
             }
+
+            device.MinPosition = (double)numericUpDown_min.Value / 100.0d;
+            device.MaxPosition = (double)numericUpDown_max.Value / 100.0d;
+
             this.Close();
         }
 
@@ -102,5 +106,14 @@ namespace Butthesda
 			this.Close();
         }
 
-    }
+		private void label1_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+		{
+
+		}
+	}
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static Butthesda.FunScriptLoader;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
@@ -16,6 +14,8 @@ namespace Butthesda
         public event EventHandler Warning_Message;
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
+
+        public event EventHandler<StringArg> SexLab_Animation_Changed;
 
         string Game_Path;
         public VibrationEvents(string Game_Path)
@@ -161,6 +161,7 @@ namespace Butthesda
                 }
 
             }
+
             return running_Event;
         }
         private Running_Event PlayEvent(Actor_Data event_data)
@@ -171,17 +172,18 @@ namespace Butthesda
 
         private Animation_Data Sexlab_Playing_Animation = new Animation_Data();
         private Running_Event sexLab_running_Event = new Running_Event();
-        private int Sexlab_Position = 0;
-        private int Sexlab_Stage = 0;
 
+		public int Sexlab_Position { get; private set; } = 0;
+        public int Sexlab_Stage { get; private set; } = 0;
+        public string Sexlab_Name { get; private set; } = "";
         private Running_Event sexLab_running_Event_orgasm = new Running_Event();
 
-        public void SexLab_StartAnimation(string name, int stage, int position, bool usingStrappon)
+        public bool SexLab_StartAnimation(string name, int stage, int position, bool usingStrappon)
         {
             SexLab_StopAnimation();
 
             name = name.ToLower();
-
+            Sexlab_Name = name;
             foreach (Animation_Data animation in SexLab_Animations)
             {
                 if (animation.name == name)
@@ -198,10 +200,11 @@ namespace Butthesda
                     //it starts playing when stage updates
                     //UpdateSexLabEvent();
 
-                    return;
+                    return true;
                 }
             }
             Warning_Message?.Invoke(this, new StringArg("Can't find SexLab animation: " + name));
+            return false;
         }
 
         public void SexLab_StopAnimation()
@@ -226,6 +229,7 @@ namespace Butthesda
         //return the current playing sexlab event
         public void SexLab_Update_Event()
         {
+            SexLab_Animation_Changed?.Invoke(this, new StringArg(String.Format("{0} S-{1}, P-{2}", Sexlab_Name, Sexlab_Stage,Sexlab_Position)));
             sexLab_running_Event.End();
             Stage_Data stage_data = Sexlab_Playing_Animation.stages[Sexlab_Stage];
             if (stage_data != null)

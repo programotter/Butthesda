@@ -5,7 +5,6 @@ using System.IO;
 using System.Media;
 using System.Text;
 using System.Threading;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
@@ -51,36 +50,69 @@ namespace Butthesda
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
         }
 
-        private void MemoryScanner_AnimationEvent(object sender, EventArgs e)
+
+        private string last_idle = "";
+        private Running_Event[] running_animation_events = new Running_Event[Enum.GetNames(typeof(DD_Device_Location)).Length];
+        private void MemoryScanner_AnimationEvent(object sender, StringArg e)
         {
-            StringArg e2 = (StringArg)e;
-            switch (e2.String)
+            string animation = e.String;
+
+            switch (animation)
             {
                 case "FootRight":
                 case "FootLeft":
                 case "JumpUp":
-                case "JumpLandEnd":
+                case "JumpDown":
+
                 case "IdleChairSitting":
                 case "idleChairGetUp":
+
+                case "tailCombatIdle":
+                case "tailSneakIdle":
+                case "IdleStop":
+
+                case "weaponSwing":
+                case "weaponLeftSwing":
+
+                case "tailMTLocomotion":
+                case "tailSneakLocomotion":
+                case "tailCombatLocomotion":
+
+                    if (last_idle == animation) return;//prevent idle spam when slowly rotating arround with weapon drawn
+                    last_idle = animation;
+
+
                     for (int i = 0; i < dd_devices.Length; i++)
                     {
                         DD_Device_Type type = dd_devices[i];
                         if (type == DD_Device_Type.none) continue;
+
+                        //only run one event per device per time
+                        Running_Event running_event = running_animation_events[i];
+                        if(running_event != null)
+                            if(!running_event.ended)
+                                continue;
+
                         string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
-                        vibrationEvents.Play_Event("dd device footstep " + location);
+                        running_animation_events[i] = vibrationEvents.Play_Event("dd device footstep " + location);
+
+                        
                     };
 
                     PlaySound();
+
                     break;
             }
 
+
         }
+
 
         private void PlaySound()
         {
             using (var soundPlayer = new SoundPlayer(@"c:\Windows\Media\Windows Information Bar.wav"))
             {
-                soundPlayer.Play(); // can also use soundPlayer.PlaySync()
+                soundPlayer.PlaySync();
             }
         }
 
@@ -395,7 +427,11 @@ namespace Butthesda
                                             int position = (int)json.Property("pos");
                                             bool usingStrapon = (bool)json.Property("usingstrappon");
                                             Notification_Message?.Invoke(this, new StringArg("SexLab " + event_property + " : \"" + name + "\" stage:" + stage + " position: " + position + " using strapon: " + usingStrapon));
-                                            vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
+                                            bool found = vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
+											if (!found)
+											{
+                                                vibrationEvents.SexLab_StartAnimation("Generic Anal", stage, position, usingStrapon);
+                                            }
                                             if (event_property == "animation changed")
                                             {
                                                 vibrationEvents.SexLab_Update_Event();
