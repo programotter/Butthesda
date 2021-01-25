@@ -1,4 +1,5 @@
 ﻿using Buttplug.Client;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -98,7 +99,47 @@ namespace Butthesda
             for (int i = 0; i < listBox_devices.Items.Count; i++) {
                 if (listBox_devices.GetItemChecked(i))
                 {
-                    Device.devices.Add((Device)listBox_devices.Items[i]);
+                    Device device = (Device)listBox_devices.Items[i];
+                    Device.devices.Add(device);
+
+
+                    //Load saved settings from Registery
+                    string[] bodyPartNames = Enum.GetNames(typeof(Device.BodyPart));
+                    Device.BodyPart[] bodyPartIds = (Device.BodyPart[])Enum.GetValues(typeof(Device.BodyPart));
+                    for (int j = 0; j < bodyPartNames.Length; j++)
+                    {
+                        String bodyPartName = bodyPartNames[j];
+                        Device.BodyPart bodyPartId = bodyPartIds[j];
+
+
+                        string[] eventTypeNames = Enum.GetNames(typeof(Device.EventType));
+                        Device.EventType[] eventTypeIds = (Device.EventType[])Enum.GetValues(typeof(Device.EventType));
+                        for (int k = 0; k < eventTypeNames.Length; k++)
+                        {
+                            String eventTypeName = eventTypeNames[k];
+                            Device.EventType eventTypeId = eventTypeIds[k];
+
+                            RegistryKey keyEvent = Registry.CurrentUser.OpenSubKey(String.Format(@"SOFTWARE\Butthesda\Device Settings\{0}\{1}\{2}", device.name, bodyPartName, eventTypeName));
+
+                            if (keyEvent != null && Convert.ToBoolean(keyEvent.GetValue("Checked")))
+                            {
+                                device.SetType(bodyPartId, eventTypeId, true);
+                            }
+                        }
+
+                    }
+
+                    RegistryKey key = Registry.CurrentUser.OpenSubKey(String.Format(@"SOFTWARE\Butthesda\Device Settings\{0}", device.name));
+                    if (key != null)
+                    {
+                        int max = Convert.ToInt32(key.GetValue("Max"));
+                        if (max == 0) { max = 100; };//default
+                        int min = Convert.ToInt32(key.GetValue("Min"));
+
+                        device.MinPosition = (double)min / 100.0d;
+                        device.MaxPosition = (double)max / 100.0d;
+                    }
+
                 }
             }
 
