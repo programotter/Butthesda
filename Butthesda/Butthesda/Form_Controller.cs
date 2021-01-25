@@ -1,4 +1,5 @@
 ﻿using Buttplug.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -90,10 +91,13 @@ namespace Butthesda
 
         private void Button1_Click(object sender, EventArgs e)
         {
+
             foreach(CheckBox_custom checkbox in checkBox_list)
             {
                 device.SetType(checkbox.bodyPart, checkbox.eventType, checkbox.checkBox.Checked);
             }
+
+            
 
             device.MinPosition = (double)numericUpDown_min.Value / 100.0d;
             device.MaxPosition = (double)numericUpDown_max.Value / 100.0d;

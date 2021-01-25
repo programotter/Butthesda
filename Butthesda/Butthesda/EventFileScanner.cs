@@ -94,12 +94,12 @@ namespace Butthesda
                                 continue;
 
                         string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
-                        running_animation_events[i] = vibrationEvents.Play_Event("dd device footstep " + location);
+                        running_animation_events[i] = vibrationEvents.PlayEvent("dd device footstep " + location);
 
                         
                     };
 
-                    PlaySound();
+                    //PlaySound();
 
                     break;
             }
@@ -276,12 +276,12 @@ namespace Butthesda
                                                 if (dd_device_new_type != DD_Device_Type.none)
                                                 {//device was removed
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device equiped: " + s_location + " " + s_location_type));
-                                                    vibrationEvents.Play_Event("dd device equiped " + s_location);
+                                                    vibrationEvents.PlayEvent("dd device equiped " + s_location);
                                                 }
                                                 else
                                                 {//device was added
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device de-equiped: " + s_location + " " + s_location_type));
-                                                    vibrationEvents.Play_Event("dd device de-equiped " + s_location);
+                                                    vibrationEvents.PlayEvent("dd device de-equiped " + s_location);
                                                 }
                                                 //break;
                                             }
@@ -426,11 +426,15 @@ namespace Butthesda
                                             int stage = (int)json.Property("stage")-1;
                                             int position = (int)json.Property("pos");
                                             bool usingStrapon = (bool)json.Property("usingstrappon");
+                                            string[] tags = json.Property("tags").Value.ToObject<string[]>();
+
+              
                                             Notification_Message?.Invoke(this, new StringArg("SexLab " + event_property + " : \"" + name + "\" stage:" + stage + " position: " + position + " using strapon: " + usingStrapon));
                                             bool found = vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
 											if (!found)
 											{
-                                                vibrationEvents.SexLab_StartAnimation("Generic Anal", stage, position, usingStrapon);
+                                                Notification_Message?.Invoke(this, new StringArg("Using Generic event"));
+                                                vibrationEvents.SexLab_StartAnimation("Generic", stage, 0, false);
                                             }
                                             if (event_property == "animation changed")
                                             {
@@ -494,7 +498,7 @@ namespace Butthesda
 
                                 if (event_property == "start")
 								{
-                                    Custom_Running_Events.Add(new Custom_Running_Event(id, vibrationEvents.Play_Event(type_property)));
+                                    Custom_Running_Events.Add(new Custom_Running_Event(id, vibrationEvents.PlayEvent(type_property)));
                                 }
 								else
 								{

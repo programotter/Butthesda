@@ -16,7 +16,7 @@ namespace Butthesda
 		public event EventHandler Warning_Message;
 		public event EventHandler Error_Message;
 		public event EventHandler Debug_Message;
-
+		public event EventHandler EventListUpdated;
 
 		private readonly TimeSpan IntermediateUpdateInterval = new TimeSpan(0, 0, 0, 0, 10); //100 milliseconds
 
@@ -57,6 +57,7 @@ namespace Butthesda
 		}
 
 		private readonly List<Running_Event> running_events;
+		public int Running_Event_Count() { return running_events.Count; }
 
 		public Device(String name, ButtplugClient client, ButtplugClientDevice device)
 		{
@@ -105,33 +106,30 @@ namespace Butthesda
 
 		private void On_Animation_Timer_Reset(object sender, EventArgs e)
 		{
-			foreach (Running_Event running_event in running_events)
+			lock (running_events)
 			{
-				if (running_event.synced_by_animation)
+				foreach (Running_Event running_event in running_events)
 				{
-					running_event.Reset();
-					ForceUpdate();
+					if (running_event.synced_by_animation)
+					{
+						running_event.Reset();
+						ForceUpdate();
+					}
 				}
 			}
 		}
-
-
-		public event Notify EventAdded;
-		public event Notify EventRemoved;
-		public event Notify EventsCleared;
-
 
 
 
 		public Running_Event AddEvent(string name, List<FunScriptAction> actions, bool synced_by_animation)
 		{
 			Running_Event new_event = new Running_Event(name, actions, synced_by_animation);
-			EventAdded?.Invoke();
 			lock (running_events)
 			{
 				running_events.Add(new_event);
 			}
 			ForceUpdate();
+			EventListUpdated?.Invoke(this, EventArgs.Empty);
 			return new_event;
 		}
 
@@ -142,7 +140,7 @@ namespace Butthesda
 			{
 				lock (device.running_events)
 				{
-					device.EventsCleared?.Invoke();
+					device.EventListUpdated?.Invoke(device, EventArgs.Empty);
 					device.running_events.Clear();
 					device.ForceUpdate();
 				}
@@ -160,6 +158,7 @@ namespace Butthesda
 
 			double old_position = 0;
 			double new_position = 0;
+			double cur_position = 0;
 			bool paused = false;
 			while (true)
 			{
@@ -223,7 +222,7 @@ namespace Butthesda
 							if (running_events[i].ended)
 							{
 								running_events.RemoveAt(i);
-								EventRemoved?.Invoke();
+								EventListUpdated?.Invoke(this, EventArgs.Empty);
 							}
 						}
 
@@ -260,28 +259,40 @@ namespace Butthesda
 					{
 						position += p;
 					}
-					position /= positions.Count;
 
-					old_position = new_position;
-					new_position = position;
+					new_position = Math.Min(position / positions.Count, 99d);
+					old_position = cur_position;
 
-					Debug_Message?.Invoke(this, new StringArg(String.Format("new position/strenght{0}, {1}", old_position, new_position)));
+
+					Debug_Message?.Invoke(this, new StringArg(String.Format("Current position:{0}, New position:{1}", cur_position, new_position)));
 					//calculate duration to next point
 					uint duration = (uint)(nextUpdate - timeNow).TotalMilliseconds;
-					
-					await Set(new_position, duration);
+					try
+					{
+						await Set(new_position, duration);
+					}catch { }
 
-					//We want to update it directly
-					nextIntermediateUpdate = timeNow;
+				//We want to update it directly
+				nextIntermediateUpdate = timeNow;
 				}
 
 				if (timeNow >= nextIntermediateUpdate)
 				{
 					nextIntermediateUpdate = timeNow + IntermediateUpdateInterval;
+					double old_cur_position = cur_position;
+					cur_position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
+					if (Double.IsNaN(cur_position)||Double.IsInfinity(cur_position)) cur_position = old_cur_position;
 
-					double position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
-					Debug_Message?.Invoke(this, new StringArg(String.Format("update position/strenght {0}", position )));
-					await Set(position);
+					double test = Math.Abs(new_position - old_position) / (double)(nextUpdate - prevUpdate).TotalMilliseconds * 200;
+					Debug_Message?.Invoke(this, new StringArg(String.Format("Intermediate Update Strength: {0} or {1}", cur_position, test)));
+					try
+					{
+						//await Set(test);
+						await Set(cur_position);
+					}
+					catch { }
+					
+					
 				}
 			}
 		}
@@ -291,6 +302,7 @@ namespace Butthesda
 
 		private void ForceUpdate()
 		{
+			Debug_Message?.Invoke(this, new StringArg("ForceUpdate"));
 			//set time to zero so the update loop is force to do a update
 			prevUpdate = new DateTime(0);
 			nextUpdate = new DateTime(0);
@@ -347,7 +359,7 @@ namespace Butthesda
 				{
 					await device.SendVibrateCmd(position);
 				}
-				else if (!device.AllowedMessages.ContainsKey(typeof(RotateCmd)))
+				else if (device.AllowedMessages.ContainsKey(typeof(RotateCmd)))
 				{
 					await device.SendRotateCmd(Math.Pow(position, 2), direction);
 				}

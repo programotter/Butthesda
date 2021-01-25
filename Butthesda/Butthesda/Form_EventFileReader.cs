@@ -223,9 +223,8 @@ namespace Butthesda
 
 			foreach (Device d in Device.devices)
 			{
-				d.EventAdded += Event_Device_Added;
-				d.EventRemoved += Event_Device_removed;
-				d.EventsCleared += Event_Device_Cleared;
+				d.EventListUpdated += EventList_Device_Updated;
+
 
 				d.Notification_Message += Notivication_Message;
 				d.Error_Message += Error_Message;
@@ -255,7 +254,7 @@ namespace Butthesda
 				Thread.Sleep(5000);//we dont want to restart to fast after eachother
 				if (!success)
 				{
-					Warning_Message(this, new StringArg("Program will to inject in 5s"));
+					Warning_Message(this, new StringArg("Program will try to inject in 5s"));
 					Request_Restart();
 				}
 
@@ -299,6 +298,9 @@ namespace Butthesda
 		private void Notivication_Message(object sender, EventArgs e)
 		{
 			if (!checkBox_ShowNotifications.Checked) return;
+			if (sender.GetType().Name == "Memory_Scanner" && !checkBox_MemoryScanner.Checked) return;
+			if (sender.GetType().Name == "EventFileScanner" && !checkBox_EventFileScanner.Checked) return;
+			if (sender.GetType().Name == "Device" && !checkBox_DebugDevices.Checked) return;
 			StringArg e2 = (StringArg)e;
 			WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Black);
 		}
@@ -307,6 +309,9 @@ namespace Butthesda
 		private void Error_Message(object sender, EventArgs e)
 		{
 			if (!checkBox_ShowErrors.Checked) return;
+			if (sender.GetType().Name == "Memory_Scanner" && !checkBox_MemoryScanner.Checked) return;
+			if (sender.GetType().Name == "EventFileScanner" && !checkBox_EventFileScanner.Checked) return;
+			if (sender.GetType().Name == "Device" && !checkBox_DebugDevices.Checked) return;
 			StringArg e2 = (StringArg)e;
 			WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Red);
 		}
@@ -315,6 +320,9 @@ namespace Butthesda
 		private void Debug_Message(object sender, EventArgs e)
 		{
 			if (!checkBox_ShowDebug.Checked) return;
+			if (sender.GetType().Name == "Memory_Scanner" && !checkBox_MemoryScanner.Checked) return;
+			if (sender.GetType().Name == "EventFileScanner" && !checkBox_EventFileScanner.Checked) return;
+			if (sender.GetType().Name == "Device" && !checkBox_DebugDevices.Checked) return;
 			StringArg e2 = (StringArg)e;
 			WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Gray);
 		}
@@ -323,6 +331,9 @@ namespace Butthesda
 		private void Warning_Message(object sender, EventArgs e)
 		{
 			if (!checkBox_ShowWarnings.Checked) return;
+			if (sender.GetType().Name == "Memory_Scanner" && !checkBox_MemoryScanner.Checked) return;
+			if (sender.GetType().Name == "EventFileScanner" && !checkBox_EventFileScanner.Checked) return;
+			if (sender.GetType().Name == "Device" && !checkBox_DebugDevices.Checked) return;
 			StringArg e2 = (StringArg)e;
 			WriteTo_EventViewer(sender.GetType().Name + " - " + e2.String, Color.Orange);
 		}
@@ -384,39 +395,28 @@ namespace Butthesda
 		}
 
 
-
-		private int running_events = 0;
-
-		private void Event_Device_removed()
+		private void EventList_Device_Updated(object sender, EventArgs e)
 		{
-			running_events--;
-			//Update_Running_Events();
-		}
+			if (!this.IsHandleCreated) return;
 
-		private void Event_Device_Added()
-		{
-			running_events++;
-			//Update_Running_Events();
-		}
-		private void Event_Device_Cleared()
-		{
-			running_events = 0;
-			//Update_Running_Events();
-		}
+			int count = 0;
+			foreach(Device d in Device.devices)
+			{
+				count += d.Running_Event_Count();
+			}
 
-		private void Update_Running_Events()
-		{
 			Invoke((MethodInvoker)(() =>
 			{
-				//label_running_events.Text = "Running events: " + running_events;
+				label_running_events.Text = "Running events: " + count;
 			}));
-		}
 
+		}
 
 
 		internal void WriteTo_EventViewer(string text, Color color)
 		{
 			if (!CheckBox_Debugger.Checked) return;
+			if (!this.IsHandleCreated) return;
 			Invoke((MethodInvoker)(() =>
 			{
 				int start = event_viewer.Text.Length;
@@ -436,7 +436,8 @@ namespace Butthesda
 
 		internal void Clear_EventViewer()
 		{
-			//Invoke((MethodInvoker)(() => event_viewer.Clear()));
+			if (!this.IsHandleCreated) return;
+			Invoke((MethodInvoker)(() => event_viewer.Clear()));
 		}
 
 

@@ -123,20 +123,6 @@ namespace Butthesda
 
 
 
-        public Running_Event Play_Event(string name)
-        {
-            name = name.ToLower();
-            foreach (Actor_Data event_data in events)
-            {
-                if (event_data.name == name)
-                {
-                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
-                    return PlayEvent(event_data);
-                }
-            }
-            Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
-            return new Running_Event();
-        }
 
         private Running_Event PlayEvent(Actor_Data event_data, bool synced_by_animation)
         {
@@ -164,9 +150,25 @@ namespace Butthesda
 
             return running_Event;
         }
+
         private Running_Event PlayEvent(Actor_Data event_data)
         {
             return PlayEvent(event_data, false);
+        }
+
+        public Running_Event PlayEvent(string name)
+        {
+            name = name.ToLower();
+            foreach (Actor_Data event_data in events)
+            {
+                if (event_data.name == name)
+                {
+                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
+                    return PlayEvent(event_data);
+                }
+            }
+            Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
+            return new Running_Event();
         }
 
 

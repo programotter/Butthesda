@@ -56,6 +56,9 @@
 			this.checkBox_ShowErrors = new System.Windows.Forms.CheckBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.checkBox_MemoryScanner = new System.Windows.Forms.CheckBox();
+			this.checkBox_EventFileScanner = new System.Windows.Forms.CheckBox();
+			this.checkBox_DebugDevices = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// event_viewer
@@ -206,11 +209,11 @@
 			// CheckBox_Debugger
 			// 
 			this.CheckBox_Debugger.AutoSize = true;
-			this.CheckBox_Debugger.Location = new System.Drawing.Point(515, 412);
+			this.CheckBox_Debugger.Location = new System.Drawing.Point(830, 52);
 			this.CheckBox_Debugger.Name = "CheckBox_Debugger";
-			this.CheckBox_Debugger.Size = new System.Drawing.Size(73, 17);
+			this.CheckBox_Debugger.Size = new System.Drawing.Size(109, 17);
 			this.CheckBox_Debugger.TabIndex = 18;
-			this.CheckBox_Debugger.Text = "Debugger";
+			this.CheckBox_Debugger.Text = "Enable Debugger";
 			this.CheckBox_Debugger.UseVisualStyleBackColor = true;
 			this.CheckBox_Debugger.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged);
 			// 
@@ -244,7 +247,7 @@
 			// checkBox_ShowDebug
 			// 
 			this.checkBox_ShowDebug.AutoSize = true;
-			this.checkBox_ShowDebug.Location = new System.Drawing.Point(610, 86);
+			this.checkBox_ShowDebug.Location = new System.Drawing.Point(857, 136);
 			this.checkBox_ShowDebug.Name = "checkBox_ShowDebug";
 			this.checkBox_ShowDebug.Size = new System.Drawing.Size(106, 17);
 			this.checkBox_ShowDebug.TabIndex = 23;
@@ -255,7 +258,7 @@
 			// checkBox_ShowNotifications
 			// 
 			this.checkBox_ShowNotifications.AutoSize = true;
-			this.checkBox_ShowNotifications.Location = new System.Drawing.Point(610, 17);
+			this.checkBox_ShowNotifications.Location = new System.Drawing.Point(857, 90);
 			this.checkBox_ShowNotifications.Name = "checkBox_ShowNotifications";
 			this.checkBox_ShowNotifications.Size = new System.Drawing.Size(112, 17);
 			this.checkBox_ShowNotifications.TabIndex = 24;
@@ -266,7 +269,7 @@
 			// checkBox_ShowWarnings
 			// 
 			this.checkBox_ShowWarnings.AutoSize = true;
-			this.checkBox_ShowWarnings.Location = new System.Drawing.Point(610, 40);
+			this.checkBox_ShowWarnings.Location = new System.Drawing.Point(857, 113);
 			this.checkBox_ShowWarnings.Name = "checkBox_ShowWarnings";
 			this.checkBox_ShowWarnings.Size = new System.Drawing.Size(98, 17);
 			this.checkBox_ShowWarnings.TabIndex = 25;
@@ -277,7 +280,7 @@
 			// checkBox_ShowErrors
 			// 
 			this.checkBox_ShowErrors.AutoSize = true;
-			this.checkBox_ShowErrors.Location = new System.Drawing.Point(610, 63);
+			this.checkBox_ShowErrors.Location = new System.Drawing.Point(857, 159);
 			this.checkBox_ShowErrors.Name = "checkBox_ShowErrors";
 			this.checkBox_ShowErrors.Size = new System.Drawing.Size(82, 17);
 			this.checkBox_ShowErrors.TabIndex = 26;
@@ -300,11 +303,44 @@
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
 			this.contextMenuStrip1.Size = new System.Drawing.Size(61, 4);
 			// 
+			// checkBox_MemoryScanner
+			// 
+			this.checkBox_MemoryScanner.AutoSize = true;
+			this.checkBox_MemoryScanner.Location = new System.Drawing.Point(857, 201);
+			this.checkBox_MemoryScanner.Name = "checkBox_MemoryScanner";
+			this.checkBox_MemoryScanner.Size = new System.Drawing.Size(141, 17);
+			this.checkBox_MemoryScanner.TabIndex = 28;
+			this.checkBox_MemoryScanner.Text = "Debug Memory Scanner";
+			this.checkBox_MemoryScanner.UseVisualStyleBackColor = true;
+			// 
+			// checkBox_EventFileScanner
+			// 
+			this.checkBox_EventFileScanner.AutoSize = true;
+			this.checkBox_EventFileScanner.Location = new System.Drawing.Point(857, 224);
+			this.checkBox_EventFileScanner.Name = "checkBox_EventFileScanner";
+			this.checkBox_EventFileScanner.Size = new System.Drawing.Size(151, 17);
+			this.checkBox_EventFileScanner.TabIndex = 29;
+			this.checkBox_EventFileScanner.Text = "Debug Event File Scanner";
+			this.checkBox_EventFileScanner.UseVisualStyleBackColor = true;
+			// 
+			// checkBox_DebugDevices
+			// 
+			this.checkBox_DebugDevices.AutoSize = true;
+			this.checkBox_DebugDevices.Location = new System.Drawing.Point(857, 247);
+			this.checkBox_DebugDevices.Name = "checkBox_DebugDevices";
+			this.checkBox_DebugDevices.Size = new System.Drawing.Size(100, 17);
+			this.checkBox_DebugDevices.TabIndex = 30;
+			this.checkBox_DebugDevices.Text = "Debug Devices";
+			this.checkBox_DebugDevices.UseVisualStyleBackColor = true;
+			// 
 			// Form_EventFileReader
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
+			this.ClientSize = new System.Drawing.Size(1014, 450);
+			this.Controls.Add(this.checkBox_DebugDevices);
+			this.Controls.Add(this.checkBox_EventFileScanner);
+			this.Controls.Add(this.checkBox_MemoryScanner);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.checkBox_ShowErrors);
 			this.Controls.Add(this.checkBox_ShowWarnings);
@@ -368,5 +404,8 @@
 		private System.Windows.Forms.CheckBox checkBox_ShowErrors;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+		private System.Windows.Forms.CheckBox checkBox_MemoryScanner;
+		private System.Windows.Forms.CheckBox checkBox_EventFileScanner;
+		private System.Windows.Forms.CheckBox checkBox_DebugDevices;
 	}
 }

@@ -106,5 +106,17 @@ namespace Butthesda.Properties {
                 this["Show_debug_info"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Device_Settings {
+            get {
+                return ((string)(this["Device_Settings"]));
+            }
+            set {
+                this["Device_Settings"] = value;
+            }
+        }
     }
 }
