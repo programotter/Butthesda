@@ -214,15 +214,17 @@ namespace Butthesda
 
 				if (Games.Running(Game_Name))
 				{
-                    bool requestRestart = true;
-					while (requestRestart)
+
+					if (Games.IsGameRunningAsAdmin(Game_Name) && !Program.IsRunningAsAdmin())
 					{
-                        var f = new Form_EventFileReader(Game_Name, textField_game_path.Text);
-                        f.Init();
-                        f.ShowDialog();
-                        requestRestart = f.RequestRestart;
+                        MessageBox.Show("The game is running as admin so this program should be as well", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Program.RestartAsAdmin();
+                        return;
                     }
 
+                    var f = new Form_EventFileReader(Game_Name, textField_game_path.Text);
+                    f.Init();
+                    f.ShowDialog();
                 }
                 return;
 			}
@@ -340,7 +342,9 @@ namespace Butthesda
             }
         }
 
-		private void label3_Click(object sender, EventArgs e)
+
+
+        private void label3_Click(object sender, EventArgs e)
 		{
 
 		}

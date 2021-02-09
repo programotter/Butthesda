@@ -126,7 +126,6 @@ namespace Butthesda
                                 device.SetType(bodyPartId, eventTypeId, true);
                             }
                         }
-
                     }
 
                     RegistryKey key = Registry.CurrentUser.OpenSubKey(String.Format(@"SOFTWARE\Butthesda\Device Settings\{0}", device.name));
