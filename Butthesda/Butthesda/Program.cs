@@ -22,7 +22,6 @@ namespace Butthesda
 
         public static DateTime start_time;
 
-
         public static bool IsRunningAsAdmin()
 		{
             WindowsIdentity identity = WindowsIdentity.GetCurrent();
