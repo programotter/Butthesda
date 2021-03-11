@@ -34,6 +34,7 @@
 			this.button3 = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.button_skyrim_vr = new System.Windows.Forms.RadioButton();
 			this.button_fallout4 = new System.Windows.Forms.RadioButton();
 			this.button_skyrim_se = new System.Windows.Forms.RadioButton();
 			this.button_skyrim = new System.Windows.Forms.RadioButton();
@@ -95,21 +96,33 @@
 			// 
 			// groupBox1
 			// 
+			this.groupBox1.Controls.Add(this.button_skyrim_vr);
 			this.groupBox1.Controls.Add(this.button_fallout4);
 			this.groupBox1.Controls.Add(this.button_skyrim_se);
 			this.groupBox1.Controls.Add(this.button_skyrim);
 			this.groupBox1.Location = new System.Drawing.Point(23, 150);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(200, 100);
+			this.groupBox1.Size = new System.Drawing.Size(200, 117);
 			this.groupBox1.TabIndex = 15;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Game";
+			// 
+			// button_skyrim_vr
+			// 
+			this.button_skyrim_vr.AutoSize = true;
+			this.button_skyrim_vr.Location = new System.Drawing.Point(6, 66);
+			this.button_skyrim_vr.Name = "button_skyrim_vr";
+			this.button_skyrim_vr.Size = new System.Drawing.Size(114, 17);
+			this.button_skyrim_vr.TabIndex = 3;
+			this.button_skyrim_vr.Text = "Skyrim VR (testing)";
+			this.button_skyrim_vr.UseVisualStyleBackColor = true;
+			this.button_skyrim_vr.CheckedChanged += new System.EventHandler(this.Game_CheckedChanged);
 			// 
 			// button_fallout4
 			// 
 			this.button_fallout4.AutoSize = true;
 			this.button_fallout4.Enabled = false;
-			this.button_fallout4.Location = new System.Drawing.Point(7, 66);
+			this.button_fallout4.Location = new System.Drawing.Point(6, 89);
 			this.button_fallout4.Name = "button_fallout4";
 			this.button_fallout4.Size = new System.Drawing.Size(65, 17);
 			this.button_fallout4.TabIndex = 2;
@@ -312,6 +325,7 @@
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.Label label8;
 		private System.Windows.Forms.Label label9;
+		private System.Windows.Forms.RadioButton button_skyrim_vr;
 	}
 }
 

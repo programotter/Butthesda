@@ -1,5 +1,4 @@
-﻿using Buttplug.Client;
-using Buttplug.Core.Messages;
+﻿using Buttplug;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -313,7 +312,7 @@ namespace Butthesda
 		public async Task Set(double position, uint duration)
 		{
 			if (client == null) return;
-			if (!device.AllowedMessages.ContainsKey(typeof(LinearCmd))) return;
+			if (!device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.LinearCmd)) return;
 			
 			position = Math.Max(Math.Min(position, 1d), 0d);
 
@@ -355,11 +354,11 @@ namespace Butthesda
 			try
 			{
 				await _clientLock.WaitAsync();
-				if (device.AllowedMessages.ContainsKey(typeof(VibrateCmd)))
+				if (device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.VibrateCmd))
 				{
 					await device.SendVibrateCmd(position);
 				}
-				else if (device.AllowedMessages.ContainsKey(typeof(RotateCmd)))
+				else if (device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.RotateCmd))
 				{
 					await device.SendRotateCmd(Math.Pow(position, 2), direction);
 				}

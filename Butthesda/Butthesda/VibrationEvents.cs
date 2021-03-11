@@ -342,8 +342,24 @@ namespace Butthesda
             string[] eventType_dirs = Directory.GetFiles(bodyPart_dir);
             foreach (string eventType_dir in eventType_dirs)
             {
-                string s_eventType = Path.GetFileName(eventType_dir);
-                s_eventType = s_eventType.Remove(s_eventType.Length - ".funscript".Length).ToLower();
+                string s_eventType = Path.GetFileName(eventType_dir).ToLower();
+                bool is_funscript = false;
+                bool is_estim = false;
+                if (s_eventType.EndsWith(".funscript"))
+				{
+                    is_funscript = true;
+                    s_eventType = s_eventType.Remove(s_eventType.Length - ".funscript".Length);
+				}
+				else if(s_eventType.EndsWith(".mp3"))
+				{
+                    is_estim = true;
+                    s_eventType = s_eventType.Remove(s_eventType.Length - ".mp3".Length);
+				}
+				else
+				{
+                    continue;
+				}
+                
 
                 Device.EventType eventType;
                 try
@@ -357,7 +373,22 @@ namespace Butthesda
 
                 int index = (int)eventType;
 
-                eventTypes[index] = new EventType_Data(eventType_dir, eventType);
+                if(eventTypes[index] == null)
+				{
+                    eventTypes[index] = new EventType_Data(eventType);
+                }
+
+				if (is_estim)
+				{
+                    eventTypes[index].Add_Estim(eventType_dir);
+                }
+                else if (is_funscript)
+				{
+                    eventTypes[index].Add_Funscript(eventType_dir);
+                }
+                
+                
+
             }
         }
 
@@ -367,12 +398,22 @@ namespace Butthesda
     {
         public List<FunScriptAction> actions;
         public Device.EventType eventType;
-        public EventType_Data(string eventType_dir, Device.EventType eventType)
+        public string estim_file = "";
+
+        public EventType_Data(Device.EventType eventType)
         {
             this.eventType = eventType;
-
-            actions = FunScriptLoader.Load(eventType_dir).ToList();
-
         }
+
+        public void Add_Funscript(string file)
+		{
+            actions = FunScriptLoader.Load(file).ToList();
+        }
+
+        public void Add_Estim(string file)
+		{
+            estim_file = file;
+        }
+
     }
 }

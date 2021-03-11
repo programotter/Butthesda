@@ -7,14 +7,14 @@
     <framework targetVersion="4.7.2" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="Butthesda.exe.manifest" size="17871">
+    <dependentAssembly dependencyType="install" codebase="Butthesda.exe.manifest" size="21743">
       <assemblyIdentity name="Butthesda.exe" version="1.0.0.15" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="amd64" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>zSNLFcwBO2QSb6r0OEchfoqKonaI6XA3BkpVrZ+zOxQ=</dsig:DigestValue>
+        <dsig:DigestValue>1zVZW1+AHoo9TXaYIcsQNGwGxsF58NPdLUoU6jzVeBM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

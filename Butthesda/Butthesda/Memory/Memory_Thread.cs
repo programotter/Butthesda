@@ -42,12 +42,12 @@ namespace Butthesda
 
         public bool Init()
 		{
-            if (Game_Name == Games.Skyrim.Executable_Name)
+            if (Game_Name == Game.Skyrim.Executable_Name)
             {
                 timer_offsets = new int[] { 0xF10588, 0x88, 0x4, 0x100, 0x10, 0x98, 0x58, 0x0, 0x44 };
                 ptr_data = Inject_TESV();
             }
-            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            else if (Game_Name == Game.SkyrimSe.Executable_Name)
             {
                 timer_offsets = new int[] { 0x01EC47C8, 0xD0, 0x8, 0x1B0, 0x20, 0x118, 0x98, 0x0, 0x44 };
                 ptr_data = Inject_SkyrimSE();

@@ -204,6 +204,9 @@ namespace Butthesda
                             case "game":
                                 switch (event_property)
                                 {
+                                    case "damage":
+                                        
+                                        break;
                                     case "loading save":
                                         loading_game = true;
 
@@ -244,6 +247,7 @@ namespace Butthesda
                                         //form_EventFileReader.GamePaused(false);
                                         inMenu = false;
                                         break;
+
                                 }
                                 break;
                             case "sla":

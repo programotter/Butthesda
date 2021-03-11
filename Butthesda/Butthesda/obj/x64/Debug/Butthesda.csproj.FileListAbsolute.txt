@@ -54,3 +54,15 @@ C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\SharpDX.
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\SharpDX.Mathematics.xml
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\SharpDX.MediaFoundation.xml
 C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\ScreenRecorderLib.xml
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\buttplug_rs_ffi.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\Google.Protobuf.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Buffers.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Memory.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Numerics.Vectors.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\Google.Protobuf.pdb
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\Google.Protobuf.xml
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Buffers.xml
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Memory.xml
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Numerics.Vectors.xml
+C:\Users\jpriv\source\repos\Butthesda\Butthesda\Butthesda\bin\x64\Debug\System.Runtime.CompilerServices.Unsafe.xml
