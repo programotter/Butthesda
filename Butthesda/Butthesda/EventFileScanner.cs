@@ -305,15 +305,15 @@ namespace Butthesda
                                         System.Diagnostics.Debug.WriteLine("Devious Device vibrate START" + (float)json.Property("arg"));
                                         System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
                                         float arg = (float)json.Property("arg");
-                                        RunVibrationEventFunScript(json, LookupEventName(arg));
-                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate " + arg));
+                                        RunVibrationEventFunScript(LookupEventName(arg));
+                                        Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate " + arg));
                                         break;
                                     case "vibrate effect stop":
                                         System.Diagnostics.Debug.WriteLine("---PRIORITY---");
                                         System.Diagnostics.Debug.WriteLine("Devious Device vibrate STOP" + (float)json.Property("arg"));
                                         System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
                                         StopVibrationEvent();
-                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate stop " + (float)json.Property("arg")));
+                                        Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate stop " + (float)json.Property("arg")));
                                         break;
                                     case "orgasm":
                                         Notification_Message?.Invoke(this, new StringArg("Deviouse Device orgasm " + (float)json.Property("arg")));
@@ -557,7 +557,7 @@ namespace Butthesda
             }
         }
 
-        private void RunVibrationEventFunScript(JObject json, string eventName)
+        private void RunVibrationEventFunScript(string eventName)
         {
             Notification_Message?.Invoke(this, new StringArg("Devious Device vibration"));
             Custom_Running_Events.Add(new Custom_Running_Event(4242, vibrationEvents.PlayEvent(eventName)));
