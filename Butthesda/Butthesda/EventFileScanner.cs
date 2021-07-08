@@ -301,9 +301,18 @@ namespace Butthesda
 
                                         break;
                                     case "vibrate effect start":
-                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate " + (float)json.Property("arg")));
+                                        System.Diagnostics.Debug.WriteLine("---PRIORITY---");
+                                        System.Diagnostics.Debug.WriteLine("Devious Device vibrate START" + (float)json.Property("arg"));
+                                        System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
+                                        float arg = (float)json.Property("arg");
+                                        RunVibrationEventFunScript(json, LookupEventName(arg));
+                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate " + arg));
                                         break;
                                     case "vibrate effect stop":
+                                        System.Diagnostics.Debug.WriteLine("---PRIORITY---");
+                                        System.Diagnostics.Debug.WriteLine("Devious Device vibrate STOP" + (float)json.Property("arg"));
+                                        System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
+                                        StopVibrationEvent();
                                         Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate stop " + (float)json.Property("arg")));
                                         break;
                                     case "orgasm":
@@ -529,7 +538,39 @@ namespace Butthesda
                     }
                 }
             }
-        }       
+        }
+
+        public static string LookupEventName(float value)
+        {
+            //try known values to be more precise...
+            string key = value.ToString("0.00");
+            int result = -1;
+            //If we have it in the dictionary of known "non-collisions" we can accurately guess the value
+            if (VIBRATION_LOOKUP.TryGetValue(key, out result))
+            {
+                value = result;
+            }
+
+            //Else we use the existing value based on the logic... there's ~ 20 or so unknown conditions
+            if (value >= 5)
+            {
+                return "dd vibrator_verystrong1LP";
+            }
+            else if (value >= 4)
+            {
+                return "dd vibrator_strong1LP";
+            }
+            else if (value >= 3)
+            {
+                return "dd vibrator_standard1LP";
+            }
+            else if (value >= 2)
+            {
+                return "dd vibrator_weak1LP";
+            }
+
+            return "dd vibrator_veryweak1LP";
+        }
     }
 
 	class Custom_Running_Event
