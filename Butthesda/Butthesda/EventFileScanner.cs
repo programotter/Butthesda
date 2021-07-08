@@ -540,16 +540,39 @@ namespace Butthesda
             }
         }
 
+        private void StopVibrationEvent()
+        {
+            for(int i = Custom_Running_Events.Count-1; i >= 0 ; i--)
+			{
+                Custom_Running_Event custom_Event = Custom_Running_Events[i];
+                if (custom_Event.id == 4242)
+                {
+                    custom_Event.running_Event.End();
+                }
+				if (custom_Event.running_Event.ended)
+				{
+                    Custom_Running_Events.RemoveAt(i);
+                }
+
+            }
+        }
+
+        private void RunVibrationEventFunScript(JObject json, string eventName)
+        {
+            Notification_Message?.Invoke(this, new StringArg("Devious Device vibration"));
+            Custom_Running_Events.Add(new Custom_Running_Event(4242, vibrationEvents.PlayEvent(eventName)));
+        }
+
         public static string LookupEventName(float value)
         {
-            //try known values to be more precise...
-            string key = value.ToString("0.00");
-            int result = -1;
-            //If we have it in the dictionary of known "non-collisions" we can accurately guess the value
-            if (VIBRATION_LOOKUP.TryGetValue(key, out result))
-            {
-                value = result;
-            }
+            ////try known values to be more precise...
+            //string key = value.ToString("0.00");
+            //int result = -1;
+            ////If we have it in the dictionary of known "non-collisions" we can accurately guess the value
+            //if (VIBRATION_LOOKUP.TryGetValue(key, out result))
+            //{
+            //    value = result;
+            //}
 
             //Else we use the existing value based on the logic... there's ~ 20 or so unknown conditions
             if (value >= 5)
