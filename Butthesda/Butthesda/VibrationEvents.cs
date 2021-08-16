@@ -126,24 +126,30 @@ namespace Butthesda
 
         private List<Running_Event> PlayEvent(Actor_Data event_data, bool synced_by_animation)
         {
+            // Some events are meant for multiple body parts. If a physical device is mapped to more than one of these body parts AND 
+            // a single event triggers multiple body parts in one call of this method, only the first effect is played on a device.
+            uint devicesReceivedEventAlready = 0;  // used as bitmask for Device.devices
+            uint currentDeviceIndex;
+
             // These loops can create 0, 1 or more events on a device, e.g. if one device is registered for multiple body parts.
             // We return a list of all created events so we don't loose the reference to an event object,
             // because we need to be able to call the End() method to prematurely stop an event.
- 
+
             List<Running_Event> runningEvents = new List<Running_Event>();
             foreach (BodyPart_Data bodypart in event_data.bodyparts)
             {
                 if (bodypart == null) { continue; }
-                Device.BodyPart bodyPart_id = bodypart.bodyPart;
+                Device.BodyPart bodyPart_id = bodypart.bodyPart;  // Head, Body, Breast, ...
 
                 foreach (EventType_Data eventType in bodypart.eventTypes)
                 {
                     if (eventType == null) { continue; }
-                    Device.EventType eventType_id = eventType.eventType;
+                    Device.EventType eventType_id = eventType.eventType;  // Shock, Damage, Penetrate, Vibrate, Equip (with footsteps==Penetrate)
 
-                    foreach (Device device in Device.devices)
+                    currentDeviceIndex = 1;
+                    foreach (Device device in Device.devices)  // physical device
                     {
-                        if (device.HasType(bodyPart_id, eventType_id))
+                        if (device.HasType(bodyPart_id, eventType_id) && (devicesReceivedEventAlready & currentDeviceIndex) == 0) // and device did not already receive an event in this method's call
                         {
                             // if (event_data.name.StartsWith("dd vibrator"))  // Debug
                             // {
@@ -152,7 +158,9 @@ namespace Butthesda
                             //     ));
                             // }
                             runningEvents.Add(device.AddEvent(event_data.name, eventType.actions, synced_by_animation));
+                            devicesReceivedEventAlready = devicesReceivedEventAlready | currentDeviceIndex;
                         }
+                        currentDeviceIndex = currentDeviceIndex << 1;
                     }
                 }
             }
