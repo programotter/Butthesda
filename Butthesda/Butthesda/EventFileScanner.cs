@@ -12,6 +12,7 @@ namespace Butthesda
 
 	class EventFileScanner
     {
+        private const int CustomEventIdDdVibrate = 4242;  // arbitrary value
 
         public event EventHandler Notification_Message;
         public event EventHandler Warning_Message;
@@ -48,11 +49,16 @@ namespace Butthesda
             this.Game_Path = Game_Path;
             this.vibrationEvents = vibrationEvents;
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
+            for (int i = 0; i < RunningAnimationEvents.Length; i++)
+            {
+                RunningAnimationEvents[i] = new List<Running_Event>();
+            }
         }
 
 
         private string last_idle = "";
-        private Running_Event[] running_animation_events = new Running_Event[Enum.GetNames(typeof(DD_Device_Location)).Length];
+        // This is a list, because there can be events running on multiple (physical) devices.
+        private List<Running_Event>[] RunningAnimationEvents = new List<Running_Event>[Enum.GetNames(typeof(DD_Device_Location)).Length];
         private void MemoryScanner_AnimationEvent(object sender, StringArg e)
         {
             string animation = e.String;
@@ -87,24 +93,21 @@ namespace Butthesda
                         DD_Device_Type type = dd_devices[i];
                         if (type == DD_Device_Type.none) continue;
 
-                        //only run one event per device per time
-                        Running_Event running_event = running_animation_events[i];
-                        if(running_event != null)
-                            if(!running_event.ended)
-                                continue;
+                        RunningAnimationEvents[i].RemoveAll(runningEvent => runningEvent.ended);
+                        // only run one event per dd device per time
+                        if (RunningAnimationEvents[i].Count > 0)  // there are still some running events
+                        {
+                            continue;
+                        }
 
                         string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
-                        running_animation_events[i] = vibrationEvents.PlayEvent("dd device footstep " + location);
-
-                        
-                    };
+                        RunningAnimationEvents[i].AddRange(vibrationEvents.PlayEvent("dd device footstep " + location));
+                    }
 
                     //PlaySound();
 
                     break;
             }
-
-
         }
 
 
@@ -118,7 +121,7 @@ namespace Butthesda
 
 
 
-        private List<Custom_Running_Event> Custom_Running_Events = new List<Custom_Running_Event>();
+        private List<CustomRunningEvent> CustomRunningEvents = new List<CustomRunningEvent>();
 
         public void Run()
         {
@@ -305,14 +308,14 @@ namespace Butthesda
                                         System.Diagnostics.Debug.WriteLine("Devious Device vibrate START" + (float)json.Property("arg"));
                                         System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
                                         float arg = (float)json.Property("arg");
-                                        RunVibrationEventFunScript(LookupEventName(arg));
+                                        StartCustomEvent(CustomEventIdDdVibrate, LookupEventName(arg));
                                         Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate " + arg));
                                         break;
                                     case "vibrate effect stop":
                                         System.Diagnostics.Debug.WriteLine("---PRIORITY---");
                                         System.Diagnostics.Debug.WriteLine("Devious Device vibrate STOP" + (float)json.Property("arg"));
                                         System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
-                                        StopVibrationEvent();
+                                        StopCustomEvent(CustomEventIdDdVibrate);
                                         Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate stop " + (float)json.Property("arg")));
                                         break;
                                     case "orgasm":
@@ -320,6 +323,7 @@ namespace Butthesda
                                         break;
                                     case "edged":
                                         Notification_Message?.Invoke(this, new StringArg("Deviouse Device edged " + (float)json.Property("arg")));
+                                        StopCustomEvent(CustomEventIdDdVibrate);  // stop vibration effect already here
                                         break;
                                     case "device event":
                                         string type = (string)json.Property("type");
@@ -511,56 +515,39 @@ namespace Butthesda
 
                                 if (event_property == "start")
 								{
-                                    Custom_Running_Events.Add(new Custom_Running_Event(id, vibrationEvents.PlayEvent(type_property)));
+                                    StartCustomEvent(id, type_property);
                                 }
 								else
 								{
-                                    for(int i = Custom_Running_Events.Count-1; i >= 0 ; i--)
-									{
-                                        Custom_Running_Event custom_Event = Custom_Running_Events[i];
-                                        if (custom_Event.id == id)
-                                        {
-                                            custom_Event.running_Event.End();
-                                        }
-										if (custom_Event.running_Event.ended)
-										{
-                                            Custom_Running_Events.RemoveAt(i);
-                                        }
-
-                                    }
+                                    StopCustomEvent(id);
                                 }
                                 break;
-          
                         }
-
-
-
                     }
                 }
             }
         }
 
-        private void StopVibrationEvent()
+        private void StartCustomEvent(int customId, string eventName)
         {
-            for(int i = Custom_Running_Events.Count-1; i >= 0 ; i--)
-			{
-                Custom_Running_Event custom_Event = Custom_Running_Events[i];
-                if (custom_Event.id == 4242)
-                {
-                    custom_Event.running_Event.End();
-                }
-				if (custom_Event.running_Event.ended)
-				{
-                    Custom_Running_Events.RemoveAt(i);
-                }
-
-            }
+            Notification_Message?.Invoke(this, new StringArg("Custom Event Start: " + eventName));
+            CustomRunningEvents.Add(new CustomRunningEvent(customId, vibrationEvents.PlayEvent(eventName)));
         }
 
-        private void RunVibrationEventFunScript(string eventName)
+        private void StopCustomEvent(int customId)
         {
-            Notification_Message?.Invoke(this, new StringArg("Devious Device vibration"));
-            Custom_Running_Events.Add(new Custom_Running_Event(4242, vibrationEvents.PlayEvent(eventName)));
+            for (int i = CustomRunningEvents.Count-1; i >= 0; i--)
+			{
+                CustomRunningEvent customEvent = CustomRunningEvents[i];
+                if (customEvent.id == customId)
+                {
+                    customEvent.End();
+                }
+                if (customEvent.ended)
+                {
+                    CustomRunningEvents.RemoveAt(i);
+                }
+            }
         }
 
         public static string LookupEventName(float value)
@@ -596,14 +583,27 @@ namespace Butthesda
         }
     }
 
-	class Custom_Running_Event
-	{
-        public int id;
-        public Running_Event running_Event;
-        public Custom_Running_Event(int id, Running_Event running_Event)
-		{
+    class CustomRunningEvent
+    {
+        public int id { get; }
+        public bool ended {
+            get {
+                return runningEvents.TrueForAll(runningEvent => runningEvent.ended);
+            }
+        }
+        
+        private readonly List<Running_Event> runningEvents;
+
+        public CustomRunningEvent(int id, List<Running_Event> runningEvents)
+        {
             this.id = id;
-            this.running_Event = running_Event;
-		}
+            this.runningEvents = runningEvents;
+        }
+   
+        public void End()
+        {
+            runningEvents.ForEach(runningEvent => runningEvent.End());
+        }
     }
+
 }

@@ -124,61 +124,78 @@ namespace Butthesda
 
 
 
-        private Running_Event PlayEvent(Actor_Data event_data, bool synced_by_animation)
+        private List<Running_Event> PlayEvent(Actor_Data event_data, bool synced_by_animation)
         {
-            Running_Event running_Event = new Running_Event();
+            // Some events are meant for multiple body parts. If a physical device is mapped to more than one of these body parts AND 
+            // a single event triggers multiple body parts in one call of this method, only the first effect is played on a device.
+            uint devicesReceivedEventAlready = 0;  // used as bitmask for Device.devices
+            uint currentDeviceIndex;
+
+            // These loops can create 0, 1 or more events on a device, e.g. if one device is registered for multiple body parts.
+            // We return a list of all created events so we don't loose the reference to an event object,
+            // because we need to be able to call the End() method to prematurely stop an event.
+
+            List<Running_Event> runningEvents = new List<Running_Event>();
             foreach (BodyPart_Data bodypart in event_data.bodyparts)
             {
-                if (bodypart == null) { continue; };
-                Device.BodyPart bodyPart_id = bodypart.bodyPart;
+                if (bodypart == null) { continue; }
+                Device.BodyPart bodyPart_id = bodypart.bodyPart;  // Head, Body, Breast, ...
 
                 foreach (EventType_Data eventType in bodypart.eventTypes)
                 {
-                    if (eventType == null) { continue; };
-                    Device.EventType eventType_id = eventType.eventType;
+                    if (eventType == null) { continue; }
+                    Device.EventType eventType_id = eventType.eventType;  // Shock, Damage, Penetrate, Vibrate, Equip (with footsteps==Penetrate)
 
-                    foreach (Device device in Device.devices)
+                    currentDeviceIndex = 1;
+                    foreach (Device device in Device.devices)  // physical device
                     {
-                        if (device.HasType(bodyPart_id, eventType_id))
+                        if (device.HasType(bodyPart_id, eventType_id) && (devicesReceivedEventAlready & currentDeviceIndex) == 0) // and device did not already receive an event in this method's call
                         {
-                            running_Event = device.AddEvent(event_data.name, eventType.actions, synced_by_animation);
+                            // if (event_data.name.StartsWith("dd vibrator"))  // Debug
+                            // {
+                            //     Notification_Message?.Invoke(this, new StringArg(String.Format(
+                            //         "Creating event {0} at part {1} with type {2}", event_data.name, bodyPart_id.ToString(), eventType_id.ToString())
+                            //     ));
+                            // }
+                            runningEvents.Add(device.AddEvent(event_data.name, eventType.actions, synced_by_animation));
+                            devicesReceivedEventAlready = devicesReceivedEventAlready | currentDeviceIndex;
                         }
+                        currentDeviceIndex = currentDeviceIndex << 1;
                     }
                 }
-
             }
-
-            return running_Event;
+            return runningEvents;
         }
 
-        private Running_Event PlayEvent(Actor_Data event_data)
+        private List<Running_Event> PlayEvent(Actor_Data event_data)
         {
             return PlayEvent(event_data, false);
         }
 
-        public Running_Event PlayEvent(string name)
+        public List<Running_Event> PlayEvent(string name)
         {
             name = name.ToLower();
             foreach (Actor_Data event_data in events)
             {
                 if (event_data.name == name)
                 {
-                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
-                    return PlayEvent(event_data);
+                    List<Running_Event> runningEvents = PlayEvent(event_data);
+                    Notification_Message?.Invoke(this, new StringArg(String.Format("Playing event: {0} ({1})", name, runningEvents.Count)));
+                    return runningEvents;
                 }
             }
             Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
-            return new Running_Event();
+            return new List<Running_Event>();
         }
 
 
         private Animation_Data Sexlab_Playing_Animation = new Animation_Data();
-        private Running_Event sexLab_running_Event = new Running_Event();
+        private List<Running_Event> sexLab_running_Event = new List<Running_Event>();
 
 		public int Sexlab_Position { get; private set; } = 0;
         public int Sexlab_Stage { get; private set; } = 0;
         public string Sexlab_Name { get; private set; } = "";
-        private Running_Event sexLab_running_Event_orgasm = new Running_Event();
+        private List<Running_Event> sexLab_running_Event_orgasm = new List<Running_Event>();
 
         public bool SexLab_StartAnimation(string name, int stage, int position, bool usingStrappon)
         {
@@ -211,8 +228,8 @@ namespace Butthesda
 
         public void SexLab_StopAnimation()
         {
-            sexLab_running_Event.End();//end old event
-            sexLab_running_Event = new Running_Event();
+            sexLab_running_Event.ForEach(runningEvent => runningEvent.End());  // end old events
+            sexLab_running_Event.Clear();
             Sexlab_Playing_Animation = new Animation_Data();
         }
 
@@ -232,7 +249,7 @@ namespace Butthesda
         public void SexLab_Update_Event()
         {
             SexLab_Animation_Changed?.Invoke(this, new StringArg(String.Format("{0} S-{1}, P-{2}", Sexlab_Name, Sexlab_Stage,Sexlab_Position)));
-            sexLab_running_Event.End();
+            sexLab_running_Event.ForEach(runningEvent => runningEvent.End());
             Stage_Data stage_data = Sexlab_Playing_Animation.stages[Sexlab_Stage];
             if (stage_data != null)
             {
@@ -244,13 +261,12 @@ namespace Butthesda
         public void SexLab_Start_Orgasm()
         {
             sexLab_running_Event_orgasm = PlayEvent(SexLab_Orgasm_Event);
-
         }
 
         public void SexLab_Stop_Orgasm()
         {
-            sexLab_running_Event_orgasm.End();
-            sexLab_running_Event_orgasm = new Running_Event();
+            sexLab_running_Event_orgasm.ForEach(runningEvent => runningEvent.End());
+            sexLab_running_Event_orgasm.Clear();
         }
     }
 
