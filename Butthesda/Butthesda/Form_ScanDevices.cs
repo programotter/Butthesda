@@ -70,10 +70,13 @@ namespace Butthesda
                 }
                 else
                 {
-                    foreach(Device device in listBox_devices.Items){
+                    for( int i = listBox_devices.Items.Count-1; i>=0; i--)
+                    {
+                        var device = listBox_devices.Items[i] as Device;
                         if (device.device == buttplugClientDevice)
                         {
-                            this.listBox_devices.Items.Add(device);
+                            device.Dispose();
+                            this.listBox_devices.Items.RemoveAt(i);
                         }
                     }
                 }
