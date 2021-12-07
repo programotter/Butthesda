@@ -9,8 +9,7 @@ namespace Butthesda
 {
 	public delegate void Notify();
 
-
-	public class Device
+	public class Device : IDisposable
 	{
 		public event EventHandler Notification_Message;
 		public event EventHandler Warning_Message;
@@ -28,6 +27,7 @@ namespace Butthesda
 		public readonly ButtplugClientDevice device;
 		public readonly ButtplugClient client;
 		public bool active;
+		public bool disposed = false;
 
 		public double MinPosition = 0d;
 		public double MaxPosition = 1d;
@@ -160,7 +160,8 @@ namespace Butthesda
 			double new_position = 0;
 			double cur_position = 0;
 			bool paused = false;
-			while (true)
+
+			while (!disposed)
 			{
 				Thread.Sleep(5);
 				//if (!gameRunning) continue;
@@ -312,6 +313,7 @@ namespace Butthesda
 		private double currentPos = 0;
 		public async Task Set(double position, uint duration)
 		{
+			if (disposed) return;
 			if (client == null) return;
 			if (!device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.LinearCmd)) return;
 			
@@ -338,8 +340,8 @@ namespace Butthesda
 
 		public async Task Set(double position)
 		{
+			if (disposed) return;
 			if (client == null) return;
-			
 
 			position = Math.Max(Math.Min(position, 1d), 0d);
 			if (currentPos == position) return;
@@ -399,7 +401,12 @@ namespace Butthesda
 		{
 			return name;
 		}
-	}
+
+        public void Dispose()
+        {
+			this.disposed = true;
+        }
+    }
 
 	public class Running_Event
 	{
