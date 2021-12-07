@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static Butthesda.FunScriptLoader;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
@@ -16,6 +14,8 @@ namespace Butthesda
         public event EventHandler Warning_Message;
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
+
+        public event EventHandler<StringArg> SexLab_Animation_Changed;
 
         string Game_Path;
         public VibrationEvents(string Game_Path)
@@ -123,65 +123,86 @@ namespace Butthesda
 
 
 
-        public Running_Event Play_Event(string name)
+
+        private List<Running_Event> PlayEvent(Actor_Data event_data, bool synced_by_animation)
+        {
+            // Some events are meant for multiple body parts. If a physical device is mapped to more than one of these body parts AND 
+            // a single event triggers multiple body parts in one call of this method, only the first effect is played on a device.
+            uint devicesReceivedEventAlready = 0;  // used as bitmask for Device.devices
+            uint currentDeviceIndex;
+
+            // These loops can create 0, 1 or more events on a device, e.g. if one device is registered for multiple body parts.
+            // We return a list of all created events so we don't loose the reference to an event object,
+            // because we need to be able to call the End() method to prematurely stop an event.
+
+            List<Running_Event> runningEvents = new List<Running_Event>();
+            foreach (BodyPart_Data bodypart in event_data.bodyparts)
+            {
+                if (bodypart == null) { continue; }
+                Device.BodyPart bodyPart_id = bodypart.bodyPart;  // Head, Body, Breast, ...
+
+                foreach (EventType_Data eventType in bodypart.eventTypes)
+                {
+                    if (eventType == null) { continue; }
+                    Device.EventType eventType_id = eventType.eventType;  // Shock, Damage, Penetrate, Vibrate, Equip (with footsteps==Penetrate)
+
+                    currentDeviceIndex = 1;
+                    foreach (Device device in Device.devices)  // physical device
+                    {
+                        if (device.HasType(bodyPart_id, eventType_id) && (devicesReceivedEventAlready & currentDeviceIndex) == 0) // and device did not already receive an event in this method's call
+                        {
+                            // if (event_data.name.StartsWith("dd vibrator"))  // Debug
+                            // {
+                            //     Notification_Message?.Invoke(this, new StringArg(String.Format(
+                            //         "Creating event {0} at part {1} with type {2}", event_data.name, bodyPart_id.ToString(), eventType_id.ToString())
+                            //     ));
+                            // }
+                            runningEvents.Add(device.AddEvent(event_data.name, eventType.actions, synced_by_animation));
+                            devicesReceivedEventAlready = devicesReceivedEventAlready | currentDeviceIndex;
+                        }
+                        currentDeviceIndex = currentDeviceIndex << 1;
+                    }
+                }
+            }
+            return runningEvents;
+        }
+
+        private List<Running_Event> PlayEvent(Actor_Data event_data)
+        {
+            return PlayEvent(event_data, false);
+        }
+
+        public List<Running_Event> PlayEvent(string name)
         {
             name = name.ToLower();
             foreach (Actor_Data event_data in events)
             {
                 if (event_data.name == name)
                 {
-                    Notification_Message?.Invoke(this, new StringArg("Playing event: " + name));
-                    return PlayEvent(event_data);
+                    List<Running_Event> runningEvents = PlayEvent(event_data);
+                    Notification_Message?.Invoke(this, new StringArg(String.Format("Playing event: {0} ({1})", name, runningEvents.Count)));
+                    return runningEvents;
                 }
             }
             Warning_Message?.Invoke(this, new StringArg("Count not find: " + name));
-            return new Running_Event();
-        }
-
-        private Running_Event PlayEvent(Actor_Data event_data, bool synced_by_animation)
-        {
-            Running_Event running_Event = new Running_Event();
-            foreach (BodyPart_Data bodypart in event_data.bodyparts)
-            {
-                if (bodypart == null) { continue; };
-                Device.BodyPart bodyPart_id = bodypart.bodyPart;
-
-                foreach (EventType_Data eventType in bodypart.eventTypes)
-                {
-                    if (eventType == null) { continue; };
-                    Device.EventType eventType_id = eventType.eventType;
-
-                    foreach (Device device in Device.devices)
-                    {
-                        if (device.HasType(bodyPart_id, eventType_id))
-                        {
-                            running_Event = device.AddEvent(event_data.name, eventType.actions, synced_by_animation);
-                        }
-                    }
-                }
-
-            }
-            return running_Event;
-        }
-        private Running_Event PlayEvent(Actor_Data event_data)
-        {
-            return PlayEvent(event_data, false);
+            return new List<Running_Event>();
         }
 
 
         private Animation_Data Sexlab_Playing_Animation = new Animation_Data();
-        private Running_Event sexLab_running_Event = new Running_Event();
-        private int Sexlab_Position = 0;
-        private int Sexlab_Stage = 0;
+        private List<Running_Event> sexLab_running_Event = new List<Running_Event>();
 
-        private Running_Event sexLab_running_Event_orgasm = new Running_Event();
+		public int Sexlab_Position { get; private set; } = 0;
+        public int Sexlab_Stage { get; private set; } = 0;
+        public string Sexlab_Name { get; private set; } = "";
+        private List<Running_Event> sexLab_running_Event_orgasm = new List<Running_Event>();
 
-        public void SexLab_StartAnimation(string name, int stage, int position, bool usingStrappon)
+        public bool SexLab_StartAnimation(string name, int stage, int position, bool usingStrappon)
         {
             SexLab_StopAnimation();
 
             name = name.ToLower();
-
+            Sexlab_Name = name;
             foreach (Animation_Data animation in SexLab_Animations)
             {
                 if (animation.name == name)
@@ -198,16 +219,17 @@ namespace Butthesda
                     //it starts playing when stage updates
                     //UpdateSexLabEvent();
 
-                    return;
+                    return true;
                 }
             }
             Warning_Message?.Invoke(this, new StringArg("Can't find SexLab animation: " + name));
+            return false;
         }
 
         public void SexLab_StopAnimation()
         {
-            sexLab_running_Event.End();//end old event
-            sexLab_running_Event = new Running_Event();
+            sexLab_running_Event.ForEach(runningEvent => runningEvent.End());  // end old events
+            sexLab_running_Event.Clear();
             Sexlab_Playing_Animation = new Animation_Data();
         }
 
@@ -226,7 +248,8 @@ namespace Butthesda
         //return the current playing sexlab event
         public void SexLab_Update_Event()
         {
-            sexLab_running_Event.End();
+            SexLab_Animation_Changed?.Invoke(this, new StringArg(String.Format("{0} S-{1}, P-{2}", Sexlab_Name, Sexlab_Stage,Sexlab_Position)));
+            sexLab_running_Event.ForEach(runningEvent => runningEvent.End());
             Stage_Data stage_data = Sexlab_Playing_Animation.stages[Sexlab_Stage];
             if (stage_data != null)
             {
@@ -238,13 +261,12 @@ namespace Butthesda
         public void SexLab_Start_Orgasm()
         {
             sexLab_running_Event_orgasm = PlayEvent(SexLab_Orgasm_Event);
-
         }
 
         public void SexLab_Stop_Orgasm()
         {
-            sexLab_running_Event_orgasm.End();
-            sexLab_running_Event_orgasm = new Running_Event();
+            sexLab_running_Event_orgasm.ForEach(runningEvent => runningEvent.End());
+            sexLab_running_Event_orgasm.Clear();
         }
     }
 
@@ -336,8 +358,24 @@ namespace Butthesda
             string[] eventType_dirs = Directory.GetFiles(bodyPart_dir);
             foreach (string eventType_dir in eventType_dirs)
             {
-                string s_eventType = Path.GetFileName(eventType_dir);
-                s_eventType = s_eventType.Remove(s_eventType.Length - ".funscript".Length).ToLower();
+                string s_eventType = Path.GetFileName(eventType_dir).ToLower();
+                bool is_funscript = false;
+                bool is_estim = false;
+                if (s_eventType.EndsWith(".funscript"))
+				{
+                    is_funscript = true;
+                    s_eventType = s_eventType.Remove(s_eventType.Length - ".funscript".Length);
+				}
+				else if(s_eventType.EndsWith(".mp3"))
+				{
+                    is_estim = true;
+                    s_eventType = s_eventType.Remove(s_eventType.Length - ".mp3".Length);
+				}
+				else
+				{
+                    continue;
+				}
+                
 
                 Device.EventType eventType;
                 try
@@ -351,7 +389,22 @@ namespace Butthesda
 
                 int index = (int)eventType;
 
-                eventTypes[index] = new EventType_Data(eventType_dir, eventType);
+                if(eventTypes[index] == null)
+				{
+                    eventTypes[index] = new EventType_Data(eventType);
+                }
+
+				if (is_estim)
+				{
+                    eventTypes[index].Add_Estim(eventType_dir);
+                }
+                else if (is_funscript)
+				{
+                    eventTypes[index].Add_Funscript(eventType_dir);
+                }
+                
+                
+
             }
         }
 
@@ -361,12 +414,22 @@ namespace Butthesda
     {
         public List<FunScriptAction> actions;
         public Device.EventType eventType;
-        public EventType_Data(string eventType_dir, Device.EventType eventType)
+        public string estim_file = "";
+
+        public EventType_Data(Device.EventType eventType)
         {
             this.eventType = eventType;
-
-            actions = FunScriptLoader.Load(eventType_dir).ToList();
-
         }
+
+        public void Add_Funscript(string file)
+		{
+            actions = FunScriptLoader.Load(file).ToList();
+        }
+
+        public void Add_Estim(string file)
+		{
+            estim_file = file;
+        }
+
     }
 }

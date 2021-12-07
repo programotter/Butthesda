@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Buttplug.Client;
-using Buttplug.Core;
-using Buttplug.Client.Connectors.WebsocketConnector;
 using Microsoft.Win32;
 using System.IO;
 using System.Threading;
+using Buttplug;
 
 namespace Butthesda
 {
@@ -24,20 +15,24 @@ namespace Butthesda
 
         public Form_Main()
         {
-			Start_Buttplug_Server();
-			InitializeComponent();
+            ConnectEmbedded();
+            InitializeComponent();
 
-            foreach(String game in Games.List())
+            foreach(Game game in Game.List())
             {
-                if (Games.Running(game))
+                if (game.Running())
                 {
-                    if (game == Games.Skyrim.Executable_Name)
+                    if (game == Game.Skyrim)
                     {
                         button_skyrim.Select();
                     }
-                    else if (game == Games.SkyrimSe.Executable_Name)
+                    else if (game == Game.SkyrimSe)
                     {
                         button_skyrim_se.Select();
+                    }
+                    else if (game == Game.SkyrimVr)
+                    {
+                        button_skyrim_vr.Select();
                     }
                     else
                     {
@@ -53,35 +48,29 @@ namespace Butthesda
 			Console.WriteLine($"Device ${args.Device.Name} connected");
 		}
 
-		private async void Start_Buttplug_Server()
-		{
-			var connector = new ButtplugEmbeddedConnector("Example Server");
-			//var connector = new ButtplugWebsocketConnector(new Uri("ws://localhost:12345/buttplug"));
-			client = new ButtplugClient("Example Client", connector);
-			client.DeviceAdded += OnDeviceAdded;
-			try
-			{
-				await client.ConnectAsync();
-			}
-			catch (ButtplugClientConnectorException ex)
-			{
-				Console.WriteLine(
-					"Can't connect to Buttplug Server, exiting!" +
-					$"Message: {ex.InnerException.Message}");
-			}
-			catch (ButtplugHandshakeException ex)
-			{
-				Console.WriteLine(
-					"Handshake with Buttplug Server, exiting!" +
-					$"Message: {ex.InnerException.Message}");
-			}
-			Console.WriteLine("Connected!");
-		}
+        private void ConnectEmbedded()
+        {
+
+            
+            // First off, we'll set up our Embedded Connector.
+            var connector = new ButtplugEmbeddedConnectorOptions();
+
+            // If we want to change anything after making the options object,
+            // we can just access the members. We'll explain more about this
+            // in a later chapter.
+            connector.ServerName = "New Server Name";
+
+            client = new ButtplugClient("Example Client");
+
+            // Connecting using an embedded connection should never fail.
+            client.ConnectAsync(connector);
+        }
 
 
         private void Button3_Click(object sender, EventArgs e)
         {
-            if (client == null || !client.Connected){
+            //Console.WriteLine(client.);
+            if (client == null){
                 MessageBox.Show("Connect to Intiface first", "Intiface not connected!",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -143,43 +132,26 @@ namespace Butthesda
 
         private void Button_default_path_Click(object sender, EventArgs e)
         {
-            Set_GamePath();
+            textField_game_path.Text = game.Install_Dir();
         }
 
-        private void Set_GamePath()
-		{
-			string keyName = "";
-
-            if (Game_Name == Games.Skyrim.Executable_Name)
-			{
-                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim";
-                
-            }else if (Game_Name == Games.SkyrimSe.Executable_Name)
-			{
-                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Skyrim Special Edition";
-            }
-            else if (Game_Name == Games.Fallout4.Executable_Name)
-            {
-                keyName = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bethesda Softworks\Fallout4";
-            }
-			string path = (string)Registry.GetValue(keyName, "Installed Path", "");
-
-
-			textField_game_path.Text = path;
-        }
 
         private void Save_GamePath()
 		{
             //save path
-            if (Game_Name == Games.Skyrim.Executable_Name)
+            if (game == Game.Skyrim)
             {
                 Properties.Settings.Default.GamePath_Skyrim = textField_game_path.Text;
             }
-            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            else if (game == Game.SkyrimSe)
             {
                 Properties.Settings.Default.GamePath_SkyrimSe = textField_game_path.Text;
             }
-            else if (Game_Name == Games.Fallout4.Executable_Name)
+            else if (game == Game.SkyrimVr)
+            {
+                Properties.Settings.Default.GamePath_SkyrimVr = textField_game_path.Text;
+            }
+            else if (game == Game.Fallout4)
             {
                 Properties.Settings.Default.GamePath_Fallout4 = textField_game_path.Text;
             }
@@ -189,15 +161,19 @@ namespace Butthesda
         private void Load_GamePath()
 		{
             //load saved game_path
-            if (Game_Name == Games.Skyrim.Executable_Name)
+            if (game == Game.Skyrim)
             {
                 textField_game_path.Text = Properties.Settings.Default.GamePath_Skyrim;
             }
-            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            else if (game == Game.SkyrimSe)
             {
                 textField_game_path.Text = Properties.Settings.Default.GamePath_SkyrimSe;
             }
-            else if (Game_Name == Games.Fallout4.Executable_Name)
+            else if (game == Game.SkyrimVr)
+            {
+                textField_game_path.Text = Properties.Settings.Default.GamePath_SkyrimVr;
+            }
+            else if (game == Game.Fallout4)
             {
                 textField_game_path.Text = Properties.Settings.Default.GamePath_Fallout4;
             }
@@ -212,22 +188,24 @@ namespace Butthesda
                 button_start.Text = "Start";
                 waiting_for_game_start = false;
 
-				if (Games.Running(Game_Name))
+				if (game.Running())
 				{
-                    bool requestRestart = true;
-					while (requestRestart)
+
+					if (game.IsGameRunningAsAdmin() && !Program.IsRunningAsAdmin())
 					{
-                        var f = new Form_EventFileReader(Game_Name, textField_game_path.Text);
-                        f.Init();
-                        f.ShowDialog();
-                        requestRestart = f.RequestRestart;
+                        MessageBox.Show("The game is running as admin so this program should be as well", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Program.RestartAsAdmin();
+                        return;
                     }
 
+                    var f = new Form_EventFileReader(game.Executable_Name, textField_game_path.Text);
+                    f.Init();
+                    f.ShowDialog();
                 }
                 return;
 			}
 
-            if (String.IsNullOrEmpty(Game_Name))
+            if (game == null)
             {
                 MessageBox.Show("Select what game you want to play first", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -259,8 +237,9 @@ namespace Butthesda
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
+                Thread.CurrentThread.Name = "Wait for game to start";
                 /* run your code here */
-                while (!Games.Running(Game_Name) && waiting_for_game_start)
+                while (!game.Running() && waiting_for_game_start)
                 {
                     Thread.Sleep(100);
                 }
@@ -272,7 +251,7 @@ namespace Butthesda
 
             }).Start();
 
-			if (!Games.Running(Game_Name))
+			if (!game.Running())
 			{
                 File.WriteAllText(textField_game_path.Text + @"\FunScripts\link.txt", string.Empty);
             }
@@ -311,7 +290,7 @@ namespace Butthesda
             
             Application.Exit();
         }
-        public static string Game_Name { get; private set; }
+        public static Game game { get; private set; }
         private void Game_CheckedChanged(object sender, EventArgs e)
         {
             RadioButton radioButton = sender as RadioButton;
@@ -324,14 +303,18 @@ namespace Butthesda
                 //update game_name
                 if (button_skyrim == radioButton)
                 {
-                    Game_Name = Games.Skyrim.Executable_Name;
+                    game = Game.Skyrim;
                 }else if (button_skyrim_se == radioButton)
                 {
-                    Game_Name = Games.SkyrimSe.Executable_Name;
+                    game = Game.SkyrimSe;
+                }
+                else if (button_skyrim_vr == radioButton)
+                {
+                    game = Game.SkyrimVr;
                 }
                 else
                 {
-                    Game_Name = Games.Fallout4.Executable_Name;
+                    game = Game.Fallout4;
                 }
 
                 Load_GamePath();
@@ -340,5 +323,15 @@ namespace Butthesda
         }
 
 
+
+        private void label3_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void label8_Click(object sender, EventArgs e)
+		{
+
+		}
 	}
 }

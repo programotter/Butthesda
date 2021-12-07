@@ -1,4 +1,7 @@
 ﻿using Buttplug.Client;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -66,7 +69,6 @@ namespace Butthesda
                 this.Controls.Add(label);
 
                 Device.EventType[] eventTypeIds = (Device.EventType[])Enum.GetValues(typeof(Device.EventType));
-
                 for (int j = 0; j < eventTypeIds.Length; j++)
                 {
                     Device.EventType eventTypeId = eventTypeIds[j];
@@ -84,16 +86,30 @@ namespace Butthesda
                 }
 
             }
+            numericUpDown_min.Value = (int) (device.MinPosition * 100.0d);
+            numericUpDown_max.Value = (int) (device.MaxPosition * 100.0d);
 
         }
 
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            foreach(CheckBox_custom checkbox in checkBox_list)
+
+            
+
+            foreach (CheckBox_custom checkbox in checkBox_list)
             {
                 device.SetType(checkbox.bodyPart, checkbox.eventType, checkbox.checkBox.Checked);
+                Registry.CurrentUser.CreateSubKey(String.Format(@"SOFTWARE\Butthesda\Device Settings\{0}\{1}\{2}", device.name, checkbox.bodyPart, checkbox.eventType)).SetValue("checked", checkbox.checkBox.Checked);
             }
+
+			RegistryKey key = Registry.CurrentUser.CreateSubKey(String.Format(@"SOFTWARE\Butthesda\Device Settings\{0}", device.name));
+            key.SetValue("Min", numericUpDown_min.Value);
+            key.SetValue("Max", numericUpDown_max.Value);
+
+            device.MinPosition = (double)numericUpDown_min.Value / 100.0d;
+            device.MaxPosition = (double)numericUpDown_max.Value / 100.0d;
+
             this.Close();
         }
 
@@ -102,5 +118,14 @@ namespace Butthesda
 			this.Close();
         }
 
-    }
+		private void label1_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+		{
+
+		}
+	}
 }

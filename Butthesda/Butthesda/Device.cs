@@ -1,5 +1,4 @@
-﻿using Buttplug.Client;
-using Buttplug.Core.Messages;
+﻿using Buttplug;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,9 +9,16 @@ namespace Butthesda
 {
 	public delegate void Notify();
 
+
 	public class Device
 	{
-		private readonly TimeSpan IntermediateUpdateInterval = new TimeSpan(0, 0, 0, 0, 100); //100 milliseconds
+		public event EventHandler Notification_Message;
+		public event EventHandler Warning_Message;
+		public event EventHandler Error_Message;
+		public event EventHandler Debug_Message;
+		public event EventHandler EventListUpdated;
+
+		private readonly TimeSpan IntermediateUpdateInterval = new TimeSpan(0, 0, 0, 0, 10); //100 milliseconds
 
 		public static List<Device> devices = new List<Device>();
 
@@ -23,7 +29,8 @@ namespace Butthesda
 		public readonly ButtplugClient client;
 		public bool active;
 
-
+		public double MinPosition = 0d;
+		public double MaxPosition = 1d;
 
 		private readonly Thread thread;
 
@@ -50,6 +57,7 @@ namespace Butthesda
 		}
 
 		private readonly List<Running_Event> running_events;
+		public int Running_Event_Count() { return running_events.Count; }
 
 		public Device(String name, ButtplugClient client, ButtplugClientDevice device)
 		{
@@ -72,38 +80,56 @@ namespace Butthesda
 		public void SetMemoryEvents(Memory_Scanner memory_Scanner)
 		{
 			if (this.memory_Scanner != null)
+			{
 				this.memory_Scanner.AnimationTimeResetted -= On_Animation_Timer_Reset;
+				this.memory_Scanner.GamePaused -= On_Game_Paused;
+				this.memory_Scanner.GameResumed -= On_Game_Resumed;
+			}
+			memory_Scanner.GamePaused += On_Game_Paused;
+			memory_Scanner.GameResumed += On_Game_Resumed;
 			memory_Scanner.AnimationTimeResetted += On_Animation_Timer_Reset;
 			this.memory_Scanner = memory_Scanner;
 		}
 
+		bool Game_Running = true;
+
+		private void On_Game_Paused(object sender, EventArgs e)
+		{
+			Game_Running = false;
+		}
+
+		private void On_Game_Resumed(object sender, EventArgs e)
+		{
+			Game_Running = true;
+			ForceUpdate();
+		}
 
 		private void On_Animation_Timer_Reset(object sender, EventArgs e)
 		{
-			foreach (Running_Event running_event in running_events)
+			lock (running_events)
 			{
-				if (running_event.synced_by_animation)
+				foreach (Running_Event running_event in running_events)
 				{
-					running_event.Reset();
-					ForceUpdate();
+					if (running_event.synced_by_animation)
+					{
+						running_event.Reset();
+						ForceUpdate();
+					}
 				}
 			}
 		}
 
 
-		public event Notify EventAdded;
-		public event Notify EventRemoved;
-		public event Notify EventsCleared;
 
 		public Running_Event AddEvent(string name, List<FunScriptAction> actions, bool synced_by_animation)
 		{
 			Running_Event new_event = new Running_Event(name, actions, synced_by_animation);
-			EventAdded?.Invoke();
 			lock (running_events)
 			{
 				running_events.Add(new_event);
 			}
 			ForceUpdate();
+			EventListUpdated?.Invoke(this, EventArgs.Empty);
 			return new_event;
 		}
 
@@ -114,7 +140,7 @@ namespace Butthesda
 			{
 				lock (device.running_events)
 				{
-					device.EventsCleared?.Invoke();
+					device.EventListUpdated?.Invoke(device, EventArgs.Empty);
 					device.running_events.Clear();
 					device.ForceUpdate();
 				}
@@ -124,14 +150,19 @@ namespace Butthesda
 		DateTime prevUpdate = new DateTime(0);
 		DateTime nextUpdate = new DateTime(0);
 		DateTime nextIntermediateUpdate = new DateTime(0);
+
+
+
 		private async void UpdateLoop()
 		{
+
 			double old_position = 0;
 			double new_position = 0;
-
+			double cur_position = 0;
+			bool paused = false;
 			while (true)
 			{
-				Thread.Sleep(10);
+				Thread.Sleep(5);
 				//if (!gameRunning) continue;
 				//check if there are running events
 				bool has_events = false;
@@ -141,8 +172,11 @@ namespace Butthesda
 				}
 
 
+
 				if (!has_events)
 				{
+					old_position = 0;
+					new_position = 0;
 					await Set(0);
 					await Set(0, 300);
 					continue;
@@ -150,6 +184,25 @@ namespace Butthesda
 
 
 				DateTime timeNow = DateTime.Now;
+				if (!Game_Running)
+				{
+					if (!paused)
+					{
+						paused = true;
+						double position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
+						await Set(position, 100);//pause at current possition
+						await Set(0);
+					}
+					continue;
+				}
+
+				if (paused)
+				{
+					paused = false;
+					ForceUpdate();
+				}
+
+
 				if (timeNow >= nextUpdate)
 				{
 
@@ -169,7 +222,7 @@ namespace Butthesda
 							if (running_events[i].ended)
 							{
 								running_events.RemoveAt(i);
-								EventRemoved?.Invoke();
+								EventListUpdated?.Invoke(this, EventArgs.Empty);
 							}
 						}
 
@@ -178,12 +231,12 @@ namespace Butthesda
 						{
 							if (nextUpdate < running_event.nextTime)
 							{
-								prevUpdate = nextUpdate;
+								prevUpdate = timeNow;
 								nextUpdate = running_event.nextTime;
 							}
 						}
 
-						//calculate what position of all events at next point (update)
+						//Find positions of all events at next update location
 						foreach (Running_Event running_event in running_events)
 						{
 							positions.Add(running_event.GetPosition(nextUpdate) / 99.0d);
@@ -193,6 +246,8 @@ namespace Butthesda
 					if (positions.Count == 0)
 					{
 						//No events are plaing on this device so we can set it back to position 0
+						old_position = 0;
+						new_position = 0;
 						await Set(0, 1000);
 						continue;
 					}
@@ -204,29 +259,40 @@ namespace Butthesda
 					{
 						position += p;
 					}
-					position /= positions.Count;
+
+					new_position = Math.Min(position / positions.Count, 99d);
+					old_position = cur_position;
 
 
-
-					old_position = new_position;
-					new_position = position;
+					Debug_Message?.Invoke(this, new StringArg(String.Format("Current position:{0}, New position:{1}", cur_position, new_position)));
 					//calculate duration to next point
 					uint duration = (uint)(nextUpdate - timeNow).TotalMilliseconds;
+					try
+					{
+						await Set(new_position, duration);
+					}catch { }
 
-					await Set(new_position, duration);
-
-					//we need to set it here so it gets the first time
-					nextIntermediateUpdate = timeNow;
+				//We want to update it directly
+				nextIntermediateUpdate = timeNow;
 				}
 
 				if (timeNow >= nextIntermediateUpdate)
 				{
 					nextIntermediateUpdate = timeNow + IntermediateUpdateInterval;
+					double old_cur_position = cur_position;
+					cur_position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
+					if (Double.IsNaN(cur_position)||Double.IsInfinity(cur_position)) cur_position = old_cur_position;
 
-					double position = ((double)(timeNow - prevUpdate).TotalMilliseconds / (double)(nextUpdate - prevUpdate).TotalMilliseconds * (new_position - old_position)) + old_position;
-					position = Math.Max(Math.Min(position, 1d), 0d);
-					Console.WriteLine(String.Format("new:{0}, old:{1}, pos:{2}", new_position, old_position, old_position));
-					await Set(position);
+					double test = Math.Abs(new_position - old_position) / (double)(nextUpdate - prevUpdate).TotalMilliseconds * 200;
+					Debug_Message?.Invoke(this, new StringArg(String.Format("Intermediate Update Strength: {0} or {1}", cur_position, test)));
+					try
+					{
+						//await Set(test);
+						await Set(cur_position);
+					}
+					catch { }
+					
+					
 				}
 			}
 		}
@@ -236,6 +302,7 @@ namespace Butthesda
 
 		private void ForceUpdate()
 		{
+			Debug_Message?.Invoke(this, new StringArg("ForceUpdate"));
 			//set time to zero so the update loop is force to do a update
 			prevUpdate = new DateTime(0);
 			nextUpdate = new DateTime(0);
@@ -246,24 +313,21 @@ namespace Butthesda
 		public async Task Set(double position, uint duration)
 		{
 			if (client == null) return;
+			if (!device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.LinearCmd)) return;
+			
+			position = Math.Max(Math.Min(position, 1d), 0d);
 
+			if (currentPos == position) return;
+			currentPos = position;
+
+			position = position * (MaxPosition - MinPosition) + MinPosition;
+			
 			try
 			{
 				await _clientLock.WaitAsync();
-
-				double deltaPos = Math.Abs(position - currentPos);
-				if (deltaPos != 0)
-				{
-					currentPos = position;
-
-					if (device.AllowedMessages.ContainsKey(typeof(LinearCmd)))
-					{
-						await device.SendLinearCmd(duration, position);
-					}
-
-					//ButtplugMessage response = await _client.SendDeviceMessage(device, message);
-					//await CheckResponse(response);
-				}
+				await device.SendLinearCmd(duration, position);
+				//ButtplugMessage response = await _client.SendDeviceMessage(device, message);
+				//await CheckResponse(response);
 			}
 			finally
 			{
@@ -274,25 +338,43 @@ namespace Butthesda
 
 		public async Task Set(double position)
 		{
-
 			if (client == null) return;
+			
+
+			position = Math.Max(Math.Min(position, 1d), 0d);
+			if (currentPos == position) return;
+
+			bool direction = currentPos > position;
+			currentPos = position;
+
+			if (position != 0)
+			{
+				position = position * (MaxPosition - MinPosition) + MinPosition;
+			}
+
 			try
 			{
 				await _clientLock.WaitAsync();
-
-				if (device.AllowedMessages.ContainsKey(typeof(VibrateCmd)))
+				if (device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.VibrateCmd))
 				{
 					await device.SendVibrateCmd(position);
 				} else if (device.AllowedMessages.ContainsKey(typeof(RotateCmd)))
 				{
 					await device.SendRotateCmd(StrengthToRotation(position), random(2) == 0);
 				}
+				else if (device.AllowedMessages.ContainsKey(ServerMessage.Types.MessageAttributeType.RotateCmd))
+				{
+					await device.SendRotateCmd(Math.Pow(position, 2), direction);
+				}
 
+					
 			}
 			finally
 			{
 				_clientLock.Release();
 			}
+
+
 		}
 
 		private static UInt32 StrengthToRotation(double strength)
@@ -392,7 +474,7 @@ namespace Butthesda
 			nextPosition = action.Position;
 			nextTime = timeStarted + action.TimeStamp;
 
-			while (nextTime < date)
+			while (nextTime < date && !ended)
 			{
 				this.Update(date);
 			}

@@ -1,26 +1,20 @@
-﻿using AOB_Scanner;
-using JetBrains.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
 
 
-    public class Memory_Scanner
+	public class Memory_Scanner
     {
         public event EventHandler Notification_Message;
         public event EventHandler Error_Message;
         public event EventHandler Debug_Message;
         public event EventHandler Warning_Message;
         
-        public event EventHandler AnimationEvent;
+        public event EventHandler<StringArg> AnimationEvent;
         public event EventHandler AnimationTimeResetted;
         public event EventHandler AnimationTimeUpdated;
 
@@ -48,15 +42,20 @@ namespace Butthesda
 
         public bool Init()
 		{
-            if (Game_Name == Games.Skyrim.Executable_Name)
+            if (Game_Name == Game.Skyrim.Executable_Name)
             {
                 timer_offsets = new int[] { 0xF10588, 0x88, 0x4, 0x100, 0x10, 0x98, 0x58, 0x0, 0x44 };
                 ptr_data = Inject_TESV();
             }
-            else if (Game_Name == Games.SkyrimSe.Executable_Name)
+            else if (Game_Name == Game.SkyrimSe.Executable_Name)
             {
                 timer_offsets = new int[] { 0x01EC47C8, 0xD0, 0x8, 0x1B0, 0x20, 0x118, 0x98, 0x0, 0x44 };
                 ptr_data = Inject_SkyrimSE();
+            }
+            else if (Game_Name == Game.SkyrimVr.Executable_Name)
+            {
+                timer_offsets = new int[] { 0x01F89668, 0xD0, 0x8, 0x1A8, 0x48, 0x0, 0x118, 0x98, 0x0, 0x44 };
+                ptr_data = Inject_SkyrimVR();
             }
 
             if (ptr_data == IntPtr.Zero)
@@ -96,10 +95,11 @@ namespace Butthesda
 
         void Check_Game_Running()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Game_Running";
             bool was_running = true;
             while (true)
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
                 Process[] pname = Process.GetProcessesByName(Game_Name);
                 if ((pname.Length != 0) != (was_running))
                 {
@@ -134,6 +134,7 @@ namespace Butthesda
 
         private void Check_Events()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Events";
             List<AnimationItem> AnimationList = new List<AnimationItem>();
             bool First_Check = true;
             while (true)
@@ -194,6 +195,7 @@ namespace Butthesda
 
         private void Check_Timer()
         {
+            Thread.CurrentThread.Name = "Memory_Thread_Check_Timer";
             float old_timer = 0;
 
             DateTime old_time = DateTime.Now;
@@ -302,12 +304,59 @@ namespace Butthesda
         }
 
 
+
         private IntPtr Inject_SkyrimSE()
         {
 
             int len = 6;
             int data_offset = 0x100;
-            byte[] bytes_program = { 0x48, 0x8B, 0xF2, 0x48, 0x8B, 0x39, 0x51, 0x50, 0x48, 0xB8, 0x00, 0x00, 0xEC, 0x4E, 0xF7, 0x7F, 0x00, 0x00, 0x48, 0x05, 0xD8, 0xF7, 0xEF, 0x02, 0x48, 0x8B, 0x00, 0x48, 0x05, 0xF0, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x83, 0xC0, 0x08, 0x48, 0x8B, 0x00, 0x48, 0x05, 0xA8, 0x01, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x05, 0x90, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x83, 0xC0, 0x68, 0x4C, 0x39, 0xF0, 0x75, 0x3D, 0x90, 0x90, 0x90, 0x90, 0x48, 0xB8, 0x93, 0x00, 0xEB, 0x4E, 0xF7, 0x7F, 0x00, 0x00, 0x48, 0x05, 0xF0, 0x00, 0x00, 0x00, 0x48, 0x83, 0xC0, 0x10, 0x48, 0x39, 0x38, 0x74, 0x12, 0x90, 0x90, 0x90, 0x90, 0x83, 0x38, 0x00, 0x74, 0x06, 0x90, 0x90, 0x90, 0x90, 0xEB, 0xE8, 0x48, 0x89, 0x38, 0x48, 0x83, 0xC0, 0x08, 0x48, 0x8B, 0x08, 0x48, 0x83, 0xC1, 0x01, 0x48, 0x89, 0x08, 0x58, 0x59, 0xE9, 0x28, 0x1C, 0x1B, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+            byte[] bytes_program = {
+            
+                
+                
+                
+                
+                
+                
+                0x48, 0x8B, 0xF2,                                                   //mov rsi,rdx                                   <-newmem
+                0x48, 0x8B, 0x39,                                                   //mov rdi,[rcx]
+                0x51, 
+                0x50, 
+                
+                0x48, 0xB8, 0x00, 0x00, 0xEC, 0x4E, 0xF7, 0x7F, 0x00, 0x00,         //mov rax,SkyrimSE.exe      SkyrimSE.exe
+                0x48, 0x05, 0xC8, 0x47, 0xEC, 0x01,                                 //                          1st offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0xD0, 0x00, 0x00, 0x00,                                 //                          2th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x83, 0xC0, 0x08,                                             //                          3th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0xA8, 0x01, 0x00, 0x00,                                 //                          4th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0x90, 0x00, 0x00, 0x00,                                 //                          5tffset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x83, 0xC0, 0x68,                                             //                          6tffset
+                
+                0x4C, 0x39, 0xF0, 
+                0x0F, 0x85, 0x39, 0x00, 0x00, 0x00,                                 //jne finishUp
+                0x48, 0xB8, 0x8A, 0x00, 0xEB, 0xC4, 0xF7, 0x7F, 0x00, 0x00,         //mov rax,randomData        randomData
+                0x48, 0x05, 0xF0, 0x00, 0x00, 0x00, 
+                0x48, 0x83, 0xC0, 0x10,                                             //                                              <-increaseArray
+                0x48, 0x39, 0x38,
+                0x0F, 0x84, 0x0E, 0x00, 0x00, 0x00,                                 //je countUoArrayItem
+                0x83, 0x38, 0x00, 
+                0x0F, 0x84, 0x02, 0x00, 0x00, 0x00,                                 //je createNewArrayItem 
+                0xEB, 0xE8,                                                         //jmp increaseArray                             <-createNewArrayItem
+                0x48, 0x89, 0x38,                                                   //                                              <-countUpArrayItem
+                0x48, 0x83, 0xC0, 0x08,
+                0x48, 0x8B, 0x08, 
+                0x48, 0x83, 0xC1, 0x01, 
+                0x48, 0x89, 0x08,
+                0x58,                                                               //pop rax                                       <-finishUp
+                0x59,                                                               //pop rcx
+                0xE9, 0x28, 0x1C, 0x1B, 0x00                                        //jmp INJECT                INJECT
+                                                                                    //                                              <-randomData
+                
+            };
 
             AOB_Scanner.AOB_Scanner aob_scanner = new AOB_Scanner.AOB_Scanner(memory.process, memory.ProcessHandle, "48 8B C4 57 48 81 EC 40 01 00 00 48 C7 44 24 20 FE FF FF FF 48 89 58 10 48 89 70 18");
             aob_scanner.setModule(memory.process.MainModule);
@@ -337,19 +386,139 @@ namespace Butthesda
             //write program
             Array.Copy(bytes_program, bytes, bytes_program.Length);
 
-            //some parts in the program are static addresses that need to be overwriten
+
+
+            //////////////////////////////////////////
+            /// Replace long jumps in the program 
+            //////////////////////////////////////////
+
+            //replace SkyrimSE.exe
             byte[] bytes_ptr_baseAddress = BitConverter.GetBytes((ulong)memory.process.MainModule.BaseAddress);
             for (int i = 0; i < 8; i++)
             {
                 bytes[0x0A + i] = bytes_ptr_baseAddress[i];
             }
-
+            
+            //replace randomData
             byte[] bytes_ptr_data = BitConverter.GetBytes((ulong)ptr_data);
             for (int i = 0; i < 8; i++)
             {
                 bytes[0x4C + i] = bytes_ptr_data[i];
             }
 
+
+            //replace INJECT
+            byte[] bytes_ptr_return = BitConverter.GetBytes((ulong)ptr_inject + (ulong)len - (ulong)ptr_functon - (ulong)0x8A);
+            for (int i = 0; i < 4; i++)
+            {
+                bytes[0x86 + i] = bytes_ptr_return[i];
+            }
+
+            memory.WriteBytes(ptr_functon, bytes);
+
+            memory.Hook(ptr_inject, ptr_functon, len, true);
+            return ptr_data + data_offset;
+        }
+
+
+
+        private IntPtr Inject_SkyrimVR()
+        {
+
+            int len = 6;
+            int data_offset = 0x100;
+            byte[] bytes_program = {
+
+                0x48, 0x8B, 0xF2,                                                   //mov rsi,rdx                                   <-newmem
+                0x48, 0x8B, 0x39,                                                   //mov rdi,[rcx]
+                0x51,
+                0x50,
+
+                0x48, 0xB8, 0x00, 0x00, 0xEC, 0x4E, 0xF7, 0x7F, 0x00, 0x00,         //mov rax,SkyrimSE.exe      SkyrimSE.exe
+                0x48, 0x05, 0x68, 0x96, 0xF8, 0x01,                                 //                          1st offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0xD0, 0x00, 0x00, 0x00,                                 //                          2th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x83, 0xC0, 0x08,                                             //                          3th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0xA8, 0x01, 0x00, 0x00,                                 //                          4th offset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x05, 0x90, 0x00, 0x00, 0x00,                                 //                          5tffset
+                0x48, 0x8B, 0x00,                                                   //mov rax,[rax]
+                0x48, 0x83, 0xC0, 0x68,                                             //                          6tffset
+                
+                0x4C, 0x39, 0xF0,
+                0x0F, 0x85, 0x39, 0x00, 0x00, 0x00,                                 //jne finishUp
+                0x48, 0xB8, 0x8A, 0x00, 0xEB, 0xC4, 0xF7, 0x7F, 0x00, 0x00,         //mov rax,randomData        randomData
+                0x48, 0x05, 0xF0, 0x00, 0x00, 0x00,
+                0x48, 0x83, 0xC0, 0x10,                                             //                                              <-increaseArray
+                0x48, 0x39, 0x38,
+                0x0F, 0x84, 0x0E, 0x00, 0x00, 0x00,                                 //je countUoArrayItem
+                0x83, 0x38, 0x00,
+                0x0F, 0x84, 0x02, 0x00, 0x00, 0x00,                                 //je createNewArrayItem 
+                0xEB, 0xE8,                                                         //jmp increaseArray                             <-createNewArrayItem
+                0x48, 0x89, 0x38,                                                   //                                              <-countUpArrayItem
+                0x48, 0x83, 0xC0, 0x08,
+                0x48, 0x8B, 0x08,
+                0x48, 0x83, 0xC1, 0x01,
+                0x48, 0x89, 0x08,
+                0x58,                                                               //pop rax                                       <-finishUp
+                0x59,                                                               //pop rcx
+                0xE9, 0x28, 0x1C, 0x1B, 0x00                                        //jmp INJECT                INJECT
+                                                                                    //                                              <-randomData
+                
+            };
+
+            AOB_Scanner.AOB_Scanner aob_scanner = new AOB_Scanner.AOB_Scanner(memory.process, memory.ProcessHandle, "48 8B C4 57 48 81 EC 40 01 00 00 48 C7 44 24 20 FE FF FF FF 48 89 58 10 48 89 70 18");
+            aob_scanner.setModule(memory.process.MainModule);
+
+            IntPtr ptr_inject = (IntPtr)aob_scanner.FindPattern();
+            if (ptr_inject == IntPtr.Zero)
+            {
+                Notification_Message?.Invoke(this, new StringArg("Could not inject, did the game load past the main menu?"));
+                return IntPtr.Zero;
+            }
+
+            ptr_inject += 0x1C;
+
+            //check if we already injected code
+            byte b = memory.ReadByte(ptr_inject);
+            if (b == 0xE9)
+            {
+                Notification_Message?.Invoke(this, new StringArg("Skipping injection (already injected)"));
+                return (IntPtr)((long)memory.ReadInt32(ptr_inject + 0x1) + (long)ptr_inject) + 5 + bytes_program.Length + data_offset;
+            }
+
+            IntPtr ptr_functon = memory.AllocateMemory(10000, ptr_inject);
+            IntPtr ptr_data = ptr_functon + bytes_program.Length;
+
+            byte[] bytes = new byte[10000];
+
+            //write program
+            Array.Copy(bytes_program, bytes, bytes_program.Length);
+
+
+
+            //////////////////////////////////////////
+            /// Replace long jumps in the program 
+            //////////////////////////////////////////
+
+            //replace SkyrimSE.exe
+            byte[] bytes_ptr_baseAddress = BitConverter.GetBytes((ulong)memory.process.MainModule.BaseAddress);
+            for (int i = 0; i < 8; i++)
+            {
+                bytes[0x0A + i] = bytes_ptr_baseAddress[i];
+            }
+
+            //replace randomData
+            byte[] bytes_ptr_data = BitConverter.GetBytes((ulong)ptr_data);
+            for (int i = 0; i < 8; i++)
+            {
+                bytes[0x4C + i] = bytes_ptr_data[i];
+            }
+
+
+            //replace INJECT
             byte[] bytes_ptr_return = BitConverter.GetBytes((ulong)ptr_inject + (ulong)len - (ulong)ptr_functon - (ulong)0x8A);
             for (int i = 0; i < 4; i++)
             {

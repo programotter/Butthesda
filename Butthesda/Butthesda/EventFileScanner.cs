@@ -5,7 +5,6 @@ using System.IO;
 using System.Media;
 using System.Text;
 using System.Threading;
-using static Butthesda.Program;
 
 namespace Butthesda
 {
@@ -13,6 +12,7 @@ namespace Butthesda
 
 	class EventFileScanner
     {
+        private const int CustomEventIdDdVibrate = 4242;  // arbitrary value
 
         public event EventHandler Notification_Message;
         public event EventHandler Warning_Message;
@@ -49,44 +49,79 @@ namespace Butthesda
             this.Game_Path = Game_Path;
             this.vibrationEvents = vibrationEvents;
             memory_scanner.AnimationEvent += MemoryScanner_AnimationEvent;
+            for (int i = 0; i < RunningAnimationEvents.Length; i++)
+            {
+                RunningAnimationEvents[i] = new List<Running_Event>();
+            }
         }
 
-        private void MemoryScanner_AnimationEvent(object sender, EventArgs e)
+
+        private string last_idle = "";
+        // This is a list, because there can be events running on multiple (physical) devices.
+        private List<Running_Event>[] RunningAnimationEvents = new List<Running_Event>[Enum.GetNames(typeof(DD_Device_Location)).Length];
+        private void MemoryScanner_AnimationEvent(object sender, StringArg e)
         {
-            StringArg e2 = (StringArg)e;
-            switch (e2.String)
+            string animation = e.String;
+
+            switch (animation)
             {
                 case "FootRight":
                 case "FootLeft":
                 case "JumpUp":
-                case "JumpLandEnd":
+                case "JumpDown":
+
                 case "IdleChairSitting":
                 case "idleChairGetUp":
+
+                case "tailCombatIdle":
+                case "tailSneakIdle":
+                case "IdleStop":
+
+                case "weaponSwing":
+                case "weaponLeftSwing":
+
+                case "tailMTLocomotion":
+                case "tailSneakLocomotion":
+                case "tailCombatLocomotion":
+
+                    if (last_idle == animation) return;//prevent idle spam when slowly rotating arround with weapon drawn
+                    last_idle = animation;
+
+
                     for (int i = 0; i < dd_devices.Length; i++)
                     {
                         DD_Device_Type type = dd_devices[i];
                         if (type == DD_Device_Type.none) continue;
-                        string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
-                        vibrationEvents.Play_Event("dd device footstep " + location);
-                    };
 
-                    PlaySound();
+                        RunningAnimationEvents[i].RemoveAll(runningEvent => runningEvent.ended);
+                        // only run one event per dd device per time
+                        if (RunningAnimationEvents[i].Count > 0)  // there are still some running events
+                        {
+                            continue;
+                        }
+
+                        string location = Enum.GetNames(typeof(DD_Device_Location))[i].ToLower();
+                        RunningAnimationEvents[i].AddRange(vibrationEvents.PlayEvent("dd device footstep " + location));
+                    }
+
+                    //PlaySound();
+
                     break;
             }
-
         }
+
 
         private void PlaySound()
         {
             using (var soundPlayer = new SoundPlayer(@"c:\Windows\Media\Windows Information Bar.wav"))
             {
-                soundPlayer.Play(); // can also use soundPlayer.PlaySync()
+                soundPlayer.PlaySync();
             }
         }
 
 
 
-        private List<Custom_Running_Event> Custom_Running_Events = new List<Custom_Running_Event>();
+        private List<CustomRunningEvent> CustomRunningEvents = new List<CustomRunningEvent>();
 
         public void Run()
         {
@@ -172,6 +207,9 @@ namespace Butthesda
                             case "game":
                                 switch (event_property)
                                 {
+                                    case "damage":
+                                        
+                                        break;
                                     case "loading save":
                                         loading_game = true;
 
@@ -212,6 +250,7 @@ namespace Butthesda
                                         //form_EventFileReader.GamePaused(false);
                                         inMenu = false;
                                         break;
+
                                 }
                                 break;
                             case "sla":
@@ -244,12 +283,12 @@ namespace Butthesda
                                                 if (dd_device_new_type != DD_Device_Type.none)
                                                 {//device was removed
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device equiped: " + s_location + " " + s_location_type));
-                                                    vibrationEvents.Play_Event("dd device equiped " + s_location);
+                                                    vibrationEvents.PlayEvent("dd device equiped " + s_location);
                                                 }
                                                 else
                                                 {//device was added
                                                     Notification_Message?.Invoke(this, new StringArg("Deviouse Device de-equiped: " + s_location + " " + s_location_type));
-                                                    vibrationEvents.Play_Event("dd device de-equiped " + s_location);
+                                                    vibrationEvents.PlayEvent("dd device de-equiped " + s_location);
                                                 }
                                                 //break;
                                             }
@@ -265,16 +304,26 @@ namespace Butthesda
 
                                         break;
                                     case "vibrate effect start":
-                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate " + (float)json.Property("arg")));
+                                        System.Diagnostics.Debug.WriteLine("---PRIORITY---");
+                                        System.Diagnostics.Debug.WriteLine("Devious Device vibrate START" + (float)json.Property("arg"));
+                                        System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
+                                        float arg = (float)json.Property("arg");
+                                        StartCustomEvent(CustomEventIdDdVibrate, LookupEventName(arg));
+                                        Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate " + arg));
                                         break;
                                     case "vibrate effect stop":
-                                        Notification_Message?.Invoke(this, new StringArg("Deviouse Device vibrate stop " + (float)json.Property("arg")));
+                                        System.Diagnostics.Debug.WriteLine("---PRIORITY---");
+                                        System.Diagnostics.Debug.WriteLine("Devious Device vibrate STOP" + (float)json.Property("arg"));
+                                        System.Diagnostics.Debug.WriteLine("---ENDPRIORITY---");
+                                        StopCustomEvent(CustomEventIdDdVibrate);
+                                        Notification_Message?.Invoke(this, new StringArg("Devious Device vibrate stop " + (float)json.Property("arg")));
                                         break;
                                     case "orgasm":
                                         Notification_Message?.Invoke(this, new StringArg("Deviouse Device orgasm " + (float)json.Property("arg")));
                                         break;
                                     case "edged":
                                         Notification_Message?.Invoke(this, new StringArg("Deviouse Device edged " + (float)json.Property("arg")));
+                                        StopCustomEvent(CustomEventIdDdVibrate);  // stop vibration effect already here
                                         break;
                                     case "device event":
                                         string type = (string)json.Property("type");
@@ -394,8 +443,16 @@ namespace Butthesda
                                             int stage = (int)json.Property("stage")-1;
                                             int position = (int)json.Property("pos");
                                             bool usingStrapon = (bool)json.Property("usingstrappon");
+                                            string[] tags = json.Property("tags").Value.ToObject<string[]>();
+
+              
                                             Notification_Message?.Invoke(this, new StringArg("SexLab " + event_property + " : \"" + name + "\" stage:" + stage + " position: " + position + " using strapon: " + usingStrapon));
-                                            vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
+                                            bool found = vibrationEvents.SexLab_StartAnimation(name, stage, position, usingStrapon);
+											if (!found)
+											{
+                                                Notification_Message?.Invoke(this, new StringArg("Using Generic event"));
+                                                vibrationEvents.SexLab_StartAnimation("Generic", stage, 0, false);
+                                            }
                                             if (event_property == "animation changed")
                                             {
                                                 vibrationEvents.SexLab_Update_Event();
@@ -458,44 +515,95 @@ namespace Butthesda
 
                                 if (event_property == "start")
 								{
-                                    Custom_Running_Events.Add(new Custom_Running_Event(id, vibrationEvents.Play_Event(type_property)));
+                                    StartCustomEvent(id, type_property);
                                 }
 								else
 								{
-                                    for(int i = Custom_Running_Events.Count-1; i >= 0 ; i--)
-									{
-                                        Custom_Running_Event custom_Event = Custom_Running_Events[i];
-                                        if (custom_Event.id == id)
-                                        {
-                                            custom_Event.running_Event.End();
-                                        }
-										if (custom_Event.running_Event.ended)
-										{
-                                            Custom_Running_Events.RemoveAt(i);
-                                        }
-
-                                    }
+                                    StopCustomEvent(id);
                                 }
                                 break;
-          
                         }
-
-
-
                     }
                 }
             }
-        }       
+        }
+
+        private void StartCustomEvent(int customId, string eventName)
+        {
+            Notification_Message?.Invoke(this, new StringArg("Custom Event Start: " + eventName));
+            CustomRunningEvents.Add(new CustomRunningEvent(customId, vibrationEvents.PlayEvent(eventName)));
+        }
+
+        private void StopCustomEvent(int customId)
+        {
+            for (int i = CustomRunningEvents.Count-1; i >= 0; i--)
+			{
+                CustomRunningEvent customEvent = CustomRunningEvents[i];
+                if (customEvent.id == customId)
+                {
+                    customEvent.End();
+                }
+                if (customEvent.ended)
+                {
+                    CustomRunningEvents.RemoveAt(i);
+                }
+            }
+        }
+
+        public static string LookupEventName(float value)
+        {
+            ////try known values to be more precise...
+            //string key = value.ToString("0.00");
+            //int result = -1;
+            ////If we have it in the dictionary of known "non-collisions" we can accurately guess the value
+            //if (VIBRATION_LOOKUP.TryGetValue(key, out result))
+            //{
+            //    value = result;
+            //}
+
+            //Else we use the existing value based on the logic... there's ~ 20 or so unknown conditions
+            if (value >= 5)
+            {
+                return "dd vibrator_verystrong1LP";
+            }
+            else if (value >= 4)
+            {
+                return "dd vibrator_strong1LP";
+            }
+            else if (value >= 3)
+            {
+                return "dd vibrator_standard1LP";
+            }
+            else if (value >= 2)
+            {
+                return "dd vibrator_weak1LP";
+            }
+
+            return "dd vibrator_veryweak1LP";
+        }
     }
 
-	class Custom_Running_Event
-	{
-        public int id;
-        public Running_Event running_Event;
-        public Custom_Running_Event(int id, Running_Event running_Event)
-		{
+    class CustomRunningEvent
+    {
+        public int id { get; }
+        public bool ended {
+            get {
+                return runningEvents.TrueForAll(runningEvent => runningEvent.ended);
+            }
+        }
+        
+        private readonly List<Running_Event> runningEvents;
+
+        public CustomRunningEvent(int id, List<Running_Event> runningEvents)
+        {
             this.id = id;
-            this.running_Event = running_Event;
-		}
+            this.runningEvents = runningEvents;
+        }
+   
+        public void End()
+        {
+            runningEvents.ForEach(runningEvent => runningEvent.End());
+        }
     }
+
 }
